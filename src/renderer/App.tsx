@@ -1,0 +1,64 @@
+import { createContext, useEffect, useState } from 'react';
+import Page from './pages/page';
+import { createTheme, Theme, ThemeProvider } from '@mui/material';
+import ModalProvider from './hoc/modals/providers';
+
+export const AppContext = createContext({
+    theme: null,
+    setThemeMode: null,
+    fetch: null
+});
+
+export default function App(): React.JSX.Element {
+    const [theme, setTheme] = useState<Theme>();
+
+    useEffect(() => {
+        fetch();
+    }, []);
+
+    // 新增：根据主题变化切换暗黑类
+    useEffect(() => {
+        if (!theme) return;
+        setThemeMode(theme.palette.mode);
+    }, [theme]);
+
+    const fetch = async () => {
+        const theme = await window.store.get('appearance.theme');
+        if (theme) {
+            setTheme(
+                createTheme({
+                    palette: {
+                        mode: theme,
+                        background: {
+                            default: (theme === 'light') ? '#eeeeee' : '#121212',
+                            paper: (theme === 'light') ? '#ffffff' : '#121212'
+                        }
+                    }
+                })
+            );
+        }
+    };
+
+    const setThemeMode = (mode: string) => {
+        const htmlEl = document.documentElement;
+        if (mode === 'dark') {
+            htmlEl.classList.add('dark');
+        } else {
+            htmlEl.classList.remove('dark');
+        }
+    };
+
+    if (!theme) return null;
+
+    return (
+        <>
+            <AppContext.Provider value={{ theme, fetch, setThemeMode }}>
+                <ThemeProvider theme={theme}>
+                    <ModalProvider>
+                        <Page />
+                    </ModalProvider>
+                </ThemeProvider>
+            </AppContext.Provider>
+        </>
+    );
+}
