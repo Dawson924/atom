@@ -145,7 +145,7 @@ export default function Page(): React.JSX.Element {
     return (
         <div
             id="window"
-            className="font-[Inter] rounded-xs border-2 border-gray-200 dark:border-gray-800"
+            className="font-[Inter] rounded-xs border-2 dark:border border-gray-200 dark:border-neutral-800"
             style={{ backgroundColor: (theme === 'light') ? '#ffffff' : '#121212' }}
         >
             <div className="title-bar">
