@@ -1,6 +1,7 @@
 import { ensureDir } from 'fs-extra';
-import { BaseService, IPCService, store } from '../core';
+import { BaseService, IPCService } from '../core';
 import { findStoreDir } from '../../utils';
+import { CONFIG } from '../storage';
 
 export class StoreService extends BaseService {
     protected override namespace = 'store';
@@ -10,15 +11,15 @@ export class StoreService extends BaseService {
         await ensureDir(findStoreDir());
 
         this.handle('get', (_, key: string) => {
-            return store.get(key);
+            return CONFIG.get(key);
         });
 
         this.handle('set', (_, key: string, value: string) => {
-            store.set(key, value);
+            CONFIG.set(key, value);
         });
 
         this.handle('delete', (_, key: string) => {
-            store.delete(key);
+            CONFIG.delete(key);
         });
     }
 

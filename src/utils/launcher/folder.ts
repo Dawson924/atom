@@ -3,17 +3,17 @@ import path from 'node:path';
 import os from 'node:os';
 
 /**
- * 获取系统对应的.minecraft路径（同步方法无需修改）
+ * 获取系统对应的.minecraft路径
  */
 function getDefaultPath() {
     const platform = os.platform();
     switch (platform) {
-        case 'win32':
-            return path.join(process.env.APPDATA || '', '.minecraft');
-        case 'darwin':
-            return path.join(os.homedir(), 'Library', 'Application Support', 'minecraft');
-        default:
-            return path.join(os.homedir(), '.minecraft');
+    case 'win32':
+        return path.join(process.env.APPDATA || '', '.minecraft');
+    case 'darwin':
+        return path.join(os.homedir(), 'Library', 'Application Support', 'minecraft');
+    default:
+        return path.join(os.homedir(), '.minecraft');
     }
 }
 
@@ -55,7 +55,9 @@ async function ensureFile(filePath: string, content = '') {
 /**
  * 异步确保.minecraft目录及子结构存在
  */
-async function setupMinecraftDirectory(minecraftPath: string) {
+async function setupMinecraftDirectory(dir?: string) {
+    const minecraftPath = dir ?? getDefaultPath();
+
     // 创建主目录
     await ensureDirectory(minecraftPath);
 
@@ -65,11 +67,10 @@ async function setupMinecraftDirectory(minecraftPath: string) {
         await ensureDirectory(path.join(minecraftPath, dir));
     }
 
-    // 初始化关键文件（如果需要）
-    // await ensureFile(
-    //     path.join(minecraftPath, 'launcher_profiles.json'),
-    //     JSON.stringify({ profiles: {} }, null, 2)
-    // );
+    await ensureFile(
+        path.join(minecraftPath, 'launcher_profiles.json'),
+        JSON.stringify({ profiles: {}, clientToken: crypto.randomUUID() }, null, 4)
+    );
 }
 
 export { setupMinecraftDirectory, getDefaultPath };

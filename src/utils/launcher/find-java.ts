@@ -1,4 +1,4 @@
-/* Copyright 2013 Joseph Spencer.
+/* Copyright 2025 Ben Dawson.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ const jreRegistryKeyPaths: string[] = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace findJavaHome {
+declare namespace findJava {
     interface IOptions {
         allowJre: boolean;
         registry?: RegArch;
@@ -39,14 +39,14 @@ declare namespace findJavaHome {
 type RegArch = 'x86' | 'x64';
 type Callback = (err: Error, res: any) => void;
 
-async function findJavaHome(optionsOrCb: findJavaHome.IOptions | Callback, optional?: Callback) {
+async function findJava(optionsOrCb: findJava.IOptions | Callback, optional?: Callback) {
     let cb: Callback;
-    let options: findJavaHome.IOptions | undefined;
+    let options: findJava.IOptions | undefined;
     if (!optional) {
         cb = <Callback>optionsOrCb;
         options = undefined;
     } else {
-        options = <findJavaHome.IOptions>optionsOrCb;
+        options = <findJava.IOptions>optionsOrCb;
         cb = optional;
     }
 
@@ -60,9 +60,9 @@ async function findJavaHome(optionsOrCb: findJavaHome.IOptions | Callback, optio
     cb(err, res);
 }
 
-findJavaHome.promise = findJavaHomePromise()
+findJava.promise = findJavaHomePromise();
 
-async function findJavaHomePromise(options?: findJavaHome.IOptions): Promise<string | null> {
+async function findJavaHomePromise(options?: findJava.IOptions): Promise<string | null> {
     const allowJre = !!(options && options.allowJre);
     const JAVA_FILENAME = (allowJre ? 'java' : 'javac') + (isWindows ? '.exe' : '');
     // Search both "x64" and "x86" registries for Java runtimes if not specified
@@ -88,45 +88,47 @@ async function findJavaHomePromise(options?: findJavaHome.IOptions): Promise<str
 
 function findInPath(JAVA_FILENAME: string) {
     return new Promise<string | null>(resolve => {
-        which(JAVA_FILENAME, (err, proposed) => {
-            if (err || !proposed) {
-                return resolve(null);
-            }
-
-            if (/\.jenv\/shims/.test(proposed)) {
-                try {
-                    proposed = execSync(`jenv which ${JAVA_FILENAME}`).toString().trim();
-                } catch (ex) {
-                    console.error(ex);
-                }
-            }
-
-            //resolve symlinks
-            proposed = fs.realpathSync(proposed);
-
-            //get the /bin directory
-            proposed = path.dirname(proposed);
-
-            //on mac, java install has a utility script called java_home that does the
-            //dirty work for us
-            const macUtility = path.resolve(proposed, 'java_home');
-            if (fs.existsSync(macUtility)) {
-                let buffer;
-                try {
-                    buffer = cp.execSync(macUtility, { cwd: proposed });
-                    const javaHome = '' + buffer.toString().replace(/\n$/, '');
-                    return resolve(javaHome);
-                } catch (error) {
+        which(JAVA_FILENAME)
+            .then((proposed: string) => {
+                if (!proposed) {
                     return resolve(null);
                 }
-            }
 
-            //up one from /bin
-            resolve(path.dirname(proposed));
-        });
+                if (/\.jenv\/shims/.test(proposed)) {
+                    try {
+                        proposed = execSync(`jenv which ${JAVA_FILENAME}`).toString().trim();
+                    } catch (ex) {
+                        console.error(ex);
+                    }
+                }
+
+                //resolve symlinks
+                proposed = fs.realpathSync(proposed);
+
+                //get the /bin directory
+                proposed = path.dirname(proposed);
+
+                //on mac, java install has a utility script called java_home that does the
+                //dirty work for us
+                const macUtility = path.resolve(proposed, 'java_home');
+                if (fs.existsSync(macUtility)) {
+                    let buffer;
+                    try {
+                        buffer = cp.execSync(macUtility, { cwd: proposed });
+                        const javaHome = '' + buffer.toString().replace(/\n$/, '');
+                        return resolve(javaHome);
+                    } catch (error) {
+                        return resolve(null);
+                    }
+                }
+
+                //up one from /bin
+                resolve(path.dirname(proposed));
+            })
+            .catch(() => resolve(null));
     });
-
 }
+
 
 async function findInRegistry(keyPaths: string[], regArchs: RegArch[]): Promise<string | null> {
     if (!keyPaths.length) return null;
@@ -163,18 +165,18 @@ function promisifyFindPossibleRegKey(keyPath: string, regArch: RegArch): Promise
             key: keyPath,
             arch: regArch
         });
-        winreg.keys((err, result) => {
+        winreg.keys((err: any, result: Registry[] | PromiseLike<Registry[]>) => {
             if (err) {
                 return resolve([]);
             }
             resolve(result);
         });
-    })
+    });
 }
 
 function promisifyFindJavaHomeInRegKey(reg: Registry): Promise<string | null> {
     return new Promise<string | null>(resolve => {
-        reg.get('JavaHome', function (err, home) {
+        reg.get('JavaHome', function (err: any, home: { value: string | PromiseLike<string>; }) {
             if (err || !home) {
                 return resolve(null);
             }
@@ -190,4 +192,4 @@ function dirIsJavaHome(dir: string, javaFilename: string): boolean {
 }
 
 
-export = findJavaHome
+export { findJava, dirIsJavaHome };

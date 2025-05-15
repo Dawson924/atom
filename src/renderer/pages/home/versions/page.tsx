@@ -17,7 +17,7 @@ export default function VersionsPage() {
         window.launcher.getVersions().then(res => setLocalVersions(res || []));
     }, []);
 
-    if (!folder && !versions) return null;
+    if (!folder || !versions) return null;
 
     return (
         <div className="h-main">

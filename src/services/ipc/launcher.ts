@@ -1,27 +1,31 @@
 import { launch, MinecraftFolder, Version } from '@xmcl/core';
-import { BaseService, IPCService, store } from '../core';
+import { BaseService, IPCService } from '../core';
 import fs from 'fs/promises';
 import { getVersionList, install, installTask, MinecraftVersionList } from '@xmcl/installer';
 import { IpcMainEvent } from 'electron';
+import { CONFIG, PROFILES } from '../storage';
+import axios from 'axios';
+import { resolveJarLocation } from '../../utils/auth/authlib-injector';
+import { AccountProfile, AuthenticatedAccount } from '../../libs/auth';
 
 export class LauncherService extends BaseService {
     protected override namespace = 'launcher';
     protected override ipc;
 
-    protected path: string;
+    protected minecraftPath: string;
     protected minecraftFolder: MinecraftFolder;
     protected versions: string[] = [];
     protected versionManifest: MinecraftVersionList;
 
     protected override async registerHandlers() {
-        this.path = store.get('launcher.path');
-        this.minecraftFolder = new MinecraftFolder(this.path);
+        this.minecraftPath = CONFIG.get('launcher.minecraftFolder');
+        this.minecraftFolder = new MinecraftFolder(this.minecraftPath);
         this.versionManifest = await getVersionList();
 
         await this.findAllVersions();
 
         this.handle('folder', () => {
-            return MinecraftFolder.from(this.path);
+            return MinecraftFolder.from(this.minecraftPath);
         });
 
         this.handle('get-versions', async () => {
@@ -70,19 +74,31 @@ export class LauncherService extends BaseService {
 
         this.handle('launch', async (_,
             version: string,
-            javaPath: string,
-            profile: Tentative = {
-                name: 'AtomPlayer',
-                id: 'atom-cli'
-            }
+            javaPath: string
         ) => {
+            const authentication = CONFIG.get('authentication');
+            authentication.yggdrasilAgent.prefetched = Buffer.from(
+                JSON.stringify((await axios.get<Tentative>('http://localhost:5400/yggdrasil')).data)
+            ).toString('base64');
+            const YggdrasilUser = PROFILES.get(`authenticationDatabase.${PROFILES.get('selectedUser.account')}`) as AuthenticatedAccount;
+            const gameProfile = YggdrasilUser.profiles[PROFILES.get('selectedUser.profile') as string] as AccountProfile;
+
             await launch({
                 resourcePath: this.minecraftFolder.root,
                 gamePath: this.minecraftFolder.getVersionRoot(version),
                 version: version,
                 javaPath: javaPath,
-                gameProfile: profile,
-                versionName: 'Atom Launcher'
+                gameProfile: {
+                    id: gameProfile.id,
+                    name: gameProfile.name
+                },
+                userType: 'mojang',
+                yggdrasilAgent: {
+                    jar: resolveJarLocation(authentication.yggdrasilAgent.jar),
+                    server: authentication.yggdrasilAgent.server,
+                    prefetched: authentication.yggdrasilAgent.prefetched
+                },
+                accessToken: YggdrasilUser.accessToken
             });
         });
     }
