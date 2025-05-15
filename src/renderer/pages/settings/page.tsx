@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import StartupPage from './startup';
 import AppearancePage from './appearance';
+import AccountPage from './account';
 
 export default function SettingsPage() {
     const [selectedPage, setSelectedPage] = useState<string>('startup');
@@ -25,6 +26,26 @@ export default function SettingsPage() {
                         <nav aria-label="Main" className="flex flex-col h-full">
                             {/* Links */}
                             <div className="text-sm font-semibold overflow-hidden hover:overflow-auto">
+                                <MenuItem value="account" icon={(
+                                    <svg
+                                        className="size-5"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <g id="SVGRepo_bgCarrier" strokeWidth={0} />
+                                        <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
+                                        <g id="SVGRepo_iconCarrier">
+                                            <path
+                                                d="M5 21C5 17.134 8.13401 14 12 14C15.866 14 19 17.134 19 21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                                strokeWidth={2}
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </g>
+                                    </svg>
+                                )} />
                                 <MenuItem value="startup" icon={(
                                     <svg
                                         className="size-5"
@@ -39,7 +60,6 @@ export default function SettingsPage() {
                                             <path d="M11.13 6.63a1.19 1.19 0 0 0-.06-1.7 1.16 1.16 0 1 0-1.64 1.63 1.2 1.2 0 0 0 1.7.07z" />
                                         </g>
                                     </svg>
-
                                 )} />
                                 <MenuItem value="appearance" icon={(
                                     <svg
@@ -63,11 +83,13 @@ export default function SettingsPage() {
                 </div>
 
                 {
-                    selectedPage === 'startup' ?
-                        <StartupPage /> :
-                        selectedPage === 'appearance' ?
-                            <AppearancePage /> :
-                            <></>
+                    selectedPage === 'account' ?
+                        <AccountPage /> :
+                        selectedPage === 'startup' ?
+                            <StartupPage /> :
+                            selectedPage === 'appearance' ?
+                                <AppearancePage /> :
+                                <></>
                 }
 
             </div>

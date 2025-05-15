@@ -1,10 +1,21 @@
 import type { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import type { MinecraftVersionList } from '@xmcl/installer';
+import { GameProfileWithProperties } from '@xmcl/user';
+import { AccountSession } from '../libs/auth';
 
 export interface ContextWindow {
     app: {
         close: () => void,
         openDevTools: (mode: 'left' | 'right' | 'bottom' | 'undocked' | 'detach' = 'right') => void
+    },
+    auth: {
+        login: ({ username, password }: {
+            username: string;
+            password: string;
+        }) => Promise<void>,
+        lookup: (uuid: string) => Promise<GameProfileWithProperties>,
+        session: () => Promise<AccountSession>,
+        invalidate: () => Promise<void>
     },
     store: {
         get: (key: string) => Promise<any>,

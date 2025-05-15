@@ -3,7 +3,7 @@ import Page from './pages/page';
 import { createTheme, Theme, ThemeProvider } from '@mui/material';
 import ModalProvider from './hoc/modals/providers';
 
-export const AppContext = createContext({
+export const ThemeContext = createContext({
     theme: null,
     setThemeMode: null,
     fetch: null
@@ -52,13 +52,13 @@ export default function App(): React.JSX.Element {
 
     return (
         <>
-            <AppContext.Provider value={{ theme, fetch, setThemeMode }}>
+            <ThemeContext.Provider value={{ theme, fetch, setThemeMode }}>
                 <ThemeProvider theme={theme}>
                     <ModalProvider>
                         <Page />
                     </ModalProvider>
                 </ThemeProvider>
-            </AppContext.Provider>
+            </ThemeContext.Provider>
         </>
     );
 }

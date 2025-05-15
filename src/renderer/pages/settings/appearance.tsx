@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../App';
+import { ThemeContext } from '../../App';
 
 export default function AppearancePage() {
-    const { setThemeMode, fetch } = useContext(AppContext);
+    const { setThemeMode, fetch } = useContext(ThemeContext);
 
     const [theme, setTheme] = useState<string>();
 

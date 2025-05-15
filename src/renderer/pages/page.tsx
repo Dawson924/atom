@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../App';
+import { ThemeContext } from '../App';
 import { RouteProvider } from '../router';
 import { AppBar, Box, Tab, Tabs } from '@mui/material';
 import HomePage from './home/page';
@@ -123,7 +123,7 @@ const routes = [
 ];
 
 export default function Page(): React.JSX.Element {
-    const context = useContext(AppContext);
+    const context = useContext(ThemeContext);
 
     const [path, setPath] = useState<string>('home');
     const [location, setLocation] = useState<string>();

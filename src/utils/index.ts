@@ -1,2 +1,2 @@
-export * from './check-folder';
+export * from './launcher';
 export * from './path';
