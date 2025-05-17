@@ -91,6 +91,9 @@ typings/
 # Electron-Forge
 out/
 
+# IDE
+.vscode
+
 # Lockfiles
 package-lock.json
 pnpm-lock.yaml
