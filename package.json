@@ -1,7 +1,7 @@
 {
   "name": "atom",
   "productName": "AtomLauncher",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -51,6 +51,7 @@
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
     "fs-extra": "^11.3.0",
+    "headview3d": "^3.0.2",
     "jimp": "^1.6.0",
     "postcss": "^8.5.3",
     "sass": "^1.87.0",

@@ -1,3 +1,4 @@
+import { SetTextureOption } from '@xmcl/user';
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('auth', {
@@ -8,4 +9,5 @@ contextBridge.exposeInMainWorld('auth', {
     lookup: (uuid: string) => ipcRenderer.invoke('auth:lookup', uuid),
     session: () => ipcRenderer.invoke('auth:session'),
     invalidate: () => ipcRenderer.invoke('auth:invalidate'),
+    setTexture: (option: SetTextureOption) => ipcRenderer.invoke('auth:set-texture', option),
 });

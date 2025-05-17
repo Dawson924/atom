@@ -1,5 +1,5 @@
 import './app';
 import './auth';
+import './config';
 import './launcher';
-import './store';
 import './util';

@@ -2,17 +2,23 @@ import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import * as skinview3d from 'skinview3d';
 import type { AccountSession } from '../../../libs/auth';
+import { Card, Container, Form, FormInput } from '../../components/commons';
+import { getSkinData, setTexture } from '../../../utils/auth/skin.browser';
+import { SelectPromptModal, useModal } from '../../hoc/modals';
+import { requestSession } from '../../../utils/auth/session.mjs';
 
 export default function AccountPage() {
+    const { openModal } = useModal();
     const [session, setSession] = useState<AccountSession>();
     const [skinUrl, setSkinUrl] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [server, setServer] = useState<string>();
+    const [autoRotate, setAutoRotate] = useState<boolean>(false);
 
     const fetch = () => {
-        window.auth.session().then(setSession);
-        window.store.get('authentication.yggdrasilAgent.server').then(setServer);
+        requestSession().then(setSession);
+        window.config.get('authentication.yggdrasilAgent.server').then(setServer);
     };
 
     useEffect(() => {
@@ -21,29 +27,29 @@ export default function AccountPage() {
 
     useEffect(() => {
         if (session && session.signedIn) {
-            window.auth.lookup(session.profile.id).then(async (profile) => {
-                const textureInfo = JSON.parse(atob(profile.properties.textures));
-                setSkinUrl(textureInfo.textures.SKIN.url);
-            });
+            getSkinData(session.profile.id).then(skinData => setSkinUrl(skinData.url));
         }
     }, [session]);
 
     useEffect(() => {
         if (!skinUrl || !session || !session.signedIn) return;
 
-        const skinViewer = new skinview3d.SkinViewer({
+        const viewer = new skinview3d.SkinViewer({
             canvas: document.getElementById('skin-container') as HTMLCanvasElement,
-            width: 300,
-            height: 200,
+            width: 260,
+            height: 260,
             skin: skinUrl,
-            enableControls: false
+            enableControls: true
         });
         // Change camera FOV
-        skinViewer.fov = 50;
+        viewer.fov = 50;
         // Zoom out
-        skinViewer.zoom = 0.9;
-
-    }, [skinUrl, session]);
+        viewer.zoom = 1;
+        viewer.animation = new skinview3d.IdleAnimation();
+        viewer.animation.speed = 1;
+        viewer.autoRotate = autoRotate;
+        viewer.autoRotateSpeed = 0.75;
+    }, [skinUrl, session, autoRotate]);
 
     const handleLogin = async () => {
         await window.auth.login({ username, password });
@@ -58,16 +64,11 @@ export default function AccountPage() {
     if (!session) return null;
 
     return (
-        <div className="px-4 py-6 w-full h-main flex flex-col overflow-y-auto">
-            <div className="relative pb-2 mb-6 shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800 group">
-                <div className="px-5 pt-3 mb-2">
-                    <h2 className="text-xs font-bold font-[Inter] uppercase text-gray-900 dark:text-gray-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all">
-                        {session.signedIn ? `Hello, ${session.profile.name}` : 'Sign In'}
-                    </h2>
-                </div>
+        <Container>
+            <Card title={session.signedIn ? `Hello, ${session.profile.name}` : 'Sign In'}>
                 <div style={{ display: session.signedIn ? 'none' : 'flex' }} className="flex-col px-5">
                     {/* Form */}
-                    <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center cursor-pointer rounded-lg">
+                    <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                         <div>
                             <h4 className="text-sm text-gray-900 dark:text-gray-50">Username</h4>
                         </div>
@@ -80,7 +81,7 @@ export default function AccountPage() {
                             />
                         </div>
                     </div>
-                    <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center cursor-pointer rounded-lg">
+                    <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                         <div>
                             <h4 className="text-sm text-gray-900 dark:text-gray-50">Password</h4>
                         </div>
@@ -95,25 +96,134 @@ export default function AccountPage() {
                     </div>
                 </div>
                 <div style={{ display: session.signedIn ? 'block' : 'none' }} className="px-7 mt-3">
-                    <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center cursor-pointer rounded-lg">
+                    <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center rounded-lg">
                         <div className="w-16">
                             <h4 className="text-sm text-gray-900 dark:text-gray-50">Uid: </h4>
                         </div>
                         <div className="w-full max-w-lg min-w-[200px]">
-                            <p className="text-sm text-gray-500">{session.profile?.id}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-300">{session.profile?.id}</p>
                         </div>
                     </div>
-                    <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center cursor-pointer rounded-lg">
+                    <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center rounded-lg">
                         <div className="w-16">
                             <h4 className="text-sm text-gray-900 dark:text-gray-50">Name: </h4>
                         </div>
                         <div className="w-full max-w-lg min-w-[200px]">
-                            <p className="text-sm text-gray-500">{session.profile?.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-300">{session.profile?.name}</p>
                         </div>
                     </div>
                 </div>
-                <div style={{ display: session.signedIn ? 'grid' : 'none' }} className="w-full grid-cols-2">
-                    <canvas id="skin-container" className="mr-auto"></canvas>
+                <div style={{ display: session.signedIn ? 'flex' : 'none' }} className="w-full flex-row justify-end items-center">
+                    <div className="w-full">
+                        <div className="px-7 mt-3 flex flex-row">
+                            <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
+                                <div>
+                                    <h4 className="text-sm text-nowrap text-gray-900 dark:text-gray-50">Auto Rotate</h4>
+                                </div>
+                                <div className="w-full">
+                                    <div
+                                        className={`relative rounded-full w-12 h-6 transition duration-200 ease-linear ${autoRotate ? 'bg-blue-600 dark:bg-blue-500' : 'bg-neutral-300 dark:bg-neutral-700'}`}
+                                    >
+                                        <label
+                                            htmlFor="autoRotate"
+                                            className={`absolute left-0 bg-white dark:bg-neutral-800 border-2 mb-2 w-6 h-6 rounded-full transition transform duration-100 ease-linear cursor-pointer ${autoRotate ? 'translate-x-full border-blue-500' : 'translate-x-0 border-neutral-300 dark:border-neutral-700'}`}
+                                        />
+                                        <input
+                                            type="checkbox"
+                                            id="autoRotate"
+                                            name="autoRotate"
+                                            className="appearance-none w-full h-full cursor-pointer active:outline-none focus:outline-none"
+                                            onClick={() => setAutoRotate(pre => !pre)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-7 mt-3 flex items-center justify-center">
+                            <label
+                                htmlFor="dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer transition-colors bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 hover:bg-gray-100 dark:border-neutral-600 dark:hover:border-gray-500"
+                            >
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                    >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                    </svg>
+                                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        PNG (64x64px, 64x32px, MAX. 128x128px)
+                                    </p>
+                                </div>
+                                <input
+                                    id="dropzone-file"
+                                    type="file"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const files = e.target.files;
+
+                                        // Check if exactly one file is selected
+                                        if (!files || files.length !== 1) {
+                                            throw new Error('Please select exactly one file');
+                                        }
+
+                                        const file = files[0];
+
+                                        // Verify the file type is PNG
+                                        if (file.type !== 'image/png') {
+                                            throw new Error('Please select a PNG file');
+                                        }
+
+                                        try {
+                                            // Convert the file to ArrayBuffer
+                                            const arrayBuffer = await file.arrayBuffer();
+                                            const skinData: Uint8Array = new Uint8Array(arrayBuffer);
+                                            const callback = (model: 'slim' | 'steve') => setTexture({
+                                                accessToken: session.account.accessToken,
+                                                uuid: session.profile.id,
+                                                type: 'skin',
+                                                texture: {
+                                                    data: skinData,
+                                                    metadata: {
+                                                        model: model
+                                                    }
+                                                }
+                                            }).then(() => requestSession().then(setSession));
+                                            openModal(SelectPromptModal, {
+                                                title: 'Choose Skin Model',
+                                                message: 'You can choose between two distinct arm models for their character: the classic Steve model and the Slim model.',
+                                                items: [
+                                                    {
+                                                        label: 'Steve',
+                                                        onSelect: () => callback('steve'),
+                                                    },
+                                                    {
+                                                        label: 'Slim',
+                                                        onSelect: () => callback('slim'),
+                                                    }
+                                                ],
+                                            });
+                                        } catch (error) {
+                                            console.error('Error converting file to ArrayBuffer:', error);
+                                            throw new Error('Error processing file');
+                                        }
+                                    }}
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    <canvas id="skin-container"></canvas>
                 </div>
                 <div className="px-7 my-2 space-x-4 inline-flex justify-start items-center">
                     {
@@ -135,30 +245,16 @@ export default function AccountPage() {
                             </Button>
                     }
                 </div>
-            </div>
-            <div className="pb-2 mb-6 shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800 group">
-                <div className="px-5 pt-3 mb-2">
-                    <h2 className="text-xs font-bold font-[Inter] uppercase text-gray-900 dark:text-gray-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all">
-                        Server
-                    </h2>
-                </div>
-                <div className="flex flex-col px-5">
-                    {/* Form */}
-                    <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center cursor-pointer rounded-lg">
-                        <div>
-                            <h4 className="text-sm text-gray-900 dark:text-gray-50">Server</h4>
-                        </div>
-                        <div className="ml-auto w-full max-w-lg min-w-[200px]">
-                            <input
-                                name="server"
-                                className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
-                                defaultValue={server}
-                                onChange={(e) => window.store.set('authentication.yggdrasilAgent.server', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            </Card>
+            <Card title="Yggdrasil Agent">
+                <Form>
+                    <FormInput
+                        title="Server"
+                        value={server}
+                        onChange={(e) => window.config.set('authentication.yggdrasilAgent.server', e.target.value)}
+                    />
+                </Form>
+            </Card>
+        </Container>
     );
 }

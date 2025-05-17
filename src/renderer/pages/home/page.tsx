@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '../../router';
-import * as skinview3d from 'skinview3d';
+import * as headview3d from 'headview3d';
 import type { AccountSession } from '../../../libs/auth';
+import { requestSession } from '../../../utils/auth/session.mjs';
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -12,9 +13,9 @@ export default function HomePage() {
     const [skinUrl, setSkinUrl] = useState<string>('');
 
     useEffect(() => {
-        window.store.get('launcher.launchVersion').then(setVersionName);
-        window.store.get('authentication.mode').then(setLaunchMode);
-        window.auth.session().then(setSession);
+        window.config.get('launch.launchVersion').then(setVersionName);
+        window.config.get('authentication.mode').then(setLaunchMode);
+        requestSession().then(setSession);
     }, []);
 
     useEffect(() => {
@@ -27,32 +28,23 @@ export default function HomePage() {
     }, [session]);
 
     useEffect(() => {
-        if (!skinUrl || launchMode === 'offline') return;
+        if (!skinUrl || launchMode === 'offline' || !session || !session.signedIn) return;
 
-        const skinViewer = new skinview3d.SkinViewer({
+        const viewer = new headview3d.SkinViewer({
             canvas: document.getElementById('skin-container') as HTMLCanvasElement,
-            width: 300,
-            height: 220,
+            width: 100,
+            height: 100,
             skin: skinUrl,
-            enableControls: false,
+            enableControls: false
         });
-        // Change camera FOV
-        skinViewer.fov = 70;
-        // Zoom out
-        skinViewer.zoom = 0.92;
-        // Rotate the player
-        skinViewer.autoRotate = false;
-        // Apply an animation
-        skinViewer.animation = new skinview3d.WalkingAnimation();
-        // Set the speed of the animation
-        skinViewer.animation.speed = 0.75;
-
-    }, [skinUrl, launchMode]);
+        viewer.zoom = 2.5;
+        viewer.fov = 70;
+    }, [skinUrl, launchMode, session]);
 
 
     const changeLaunchMode = (mode: string) => {
         setLaunchMode(mode);
-        window.store.set('authentication.mode', mode);
+        window.config.set('authentication.mode', mode);
     };
 
     if (!session) return null;
@@ -65,7 +57,7 @@ export default function HomePage() {
                     <div className="z-10 w-[300px] h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
                         <div className="px-4 mt-4 h-full flex flex-col items-center">
                             {/* Segmented Controls */}
-                            <div className="inline-flex h-9 w-auto items-baseline justify-start rounded-lg bg-gray-100 p-1">
+                            <div className="inline-flex h-9 w-auto items-baseline justify-start rounded-lg bg-gray-100 dark:bg-neutral-900 p-1">
                                 <MenuItem
                                     value="Mojang"
                                     selected={launchMode === 'yggdrasil'}
@@ -81,10 +73,15 @@ export default function HomePage() {
                                 />
                             </div>
                             {/* Character preview */}
-                            <div className="mt-4 w-full h-full flex flex-col items-center">
+                            <div className="mt-4 w-full h-full flex flex-col justify-center items-center">
                                 {
                                     (skinUrl && launchMode !== 'offline') && (
-                                        <canvas id="skin-container"></canvas>
+                                        <div className="w-full h-full space-y-3 flex flex-col justify-center items-center">
+                                            <canvas id="skin-container"></canvas>
+                                            <div>
+                                                <h3 className="text-lg font-light text-gray-700 dark:text-gray-300">Dawson924</h3>
+                                            </div>
+                                        </div>
                                     )
                                 }
                             </div>
@@ -96,7 +93,7 @@ export default function HomePage() {
                                     if (!versionName)
                                         return navigate('home/versions');
 
-                                    window.launcher.launch(versionName, await window.store.get('launcher.javaPath'));
+                                    window.launcher.launch(versionName, await window.config.get('launch.javaPath'));
                                 }}
                             >
                                 <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">Launch</h3>
@@ -132,8 +129,8 @@ export default function HomePage() {
 const MenuItem: React.FC<any> = ({ value, selected, icon, onClick }) => {
     const baseClasses = 'group inline-flex w-28 items-center justify-center whitespace-nowrap py-2 align-middle font-semibold transition-all duration-300 ease-in-out disabled:cursor-not-allowed min-w-[32px] gap-1.5 text-xs h-7 px-3 cursor-pointer';
 
-    const selectedClasses = 'rounded-md bg-white text-gray-950 drop-shadow';
-    const unselectedClasses = 'rounded-lg bg-transparent text-gray-600';
+    const selectedClasses = 'rounded-md bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-300 drop-shadow';
+    const unselectedClasses = 'rounded-lg bg-transparent text-gray-600 dark:text-gray-400';
 
     return (
         <button
@@ -157,7 +154,6 @@ const YggdrasilIcon = () => (
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 32 32"
         xmlSpace="preserve"
-        fill="#000000"
     >
         <g id="SVGRepo_bgCarrier" strokeWidth={0} />
         <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -166,7 +162,7 @@ const YggdrasilIcon = () => (
                 type="text/css"
                 dangerouslySetInnerHTML={{
                     __html:
-                        ' .st0{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;} '
+                        ' .st0{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;} '
                 }}
             />
             <path

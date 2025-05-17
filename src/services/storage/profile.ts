@@ -17,7 +17,7 @@ const store = new Store<{
         selectedUser: null,
         clientToken: randomUUID()
     },
-    cwd: CONFIG.get('launcher.minecraftFolder'),
+    cwd: CONFIG.get('launch.minecraftFolder'),
     name: 'launcher_profiles'
 });
 

@@ -1,7 +1,7 @@
-import { YggdrasilThirdPartyClient } from '@xmcl/user';
+import { SetTextureOption, YggdrasilThirdPartyClient } from '@xmcl/user';
 import { BaseService, IPCService } from '../core';
 import { CONFIG, PROFILES } from '../storage';
-import { getCurrentAccount, getCurrentProfile, hasAccount, updateAccount } from '../../utils/auth';
+import { deleteAccount, getCurrentAccount, getCurrentProfile, hasAccount, updateAccount } from '../../utils/auth';
 
 export class AuthService extends BaseService {
     protected override readonly namespace = 'auth';
@@ -45,6 +45,17 @@ export class AuthService extends BaseService {
 
         this.handle('invalidate', async () => {
             await this.client.invalidate(getCurrentAccount().accessToken, this.clientToken);
+            deleteAccount();
+        });
+
+        this.handle('set-texture', async (_, option: SetTextureOption) => {
+            // 默认调用此方法前界面已拿到 session 数据
+            await this.client.setTexture({
+                accessToken: option.accessToken,
+                uuid: option.uuid,
+                type: option.type,
+                texture: option.texture
+            });
         });
     }
 
