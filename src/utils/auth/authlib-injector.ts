@@ -7,9 +7,9 @@ const resolveJarLocation = (jar?: string) => {
     if (jar && path.isAbsolute(jar))
         return jar;
     if (!jar) {
-        return path.join(CONFIG.get('launcher.minecraftFolder'), DEFAULT_FILE_NAME);
+        return path.join(CONFIG.get('launch.minecraftFolder'), DEFAULT_FILE_NAME);
     }
-    return path.join(CONFIG.get('launcher.minecraftFolder'), jar);
+    return path.join(CONFIG.get('launch.minecraftFolder'), jar);
 };
 
 export { resolveJarLocation };

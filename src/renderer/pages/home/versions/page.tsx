@@ -5,6 +5,7 @@ import { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import { useEffect, useState } from 'react';
 import { truncateWithEllipsis } from '../../../../utils/string';
 import { useNavigate } from '../../../router';
+import { Card, Container, Form } from '../../../components/commons';
 
 export default function VersionsPage() {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function VersionsPage() {
     if (!folder || !versions) return null;
 
     return (
-        <div className="h-main">
+        <div className="h-main bg-blue-100 dark:bg-neutral-700">
             <div className="flex flex-row">
 
                 <div className="z-10 w-[250px] h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
@@ -47,15 +48,9 @@ export default function VersionsPage() {
                     </div>
                 </div>
 
-                <div className="px-4 py-6 w-full h-main flex flex-col overflow-y-auto bg-blue-100 dark:bg-neutral-700 scroll-container">
-                    <div className="pt-1 pb-3 shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800">
-                        <div className="px-5 pt-3 mb-1">
-                            <h2 className="text-sm font-semibold font-[Inter] text-gray-900 dark:text-gray-50">
-                                Minecraft
-                            </h2>
-                        </div>
-                        <div className="flex flex-col px-5">
-                            {/* Minecraft version instances */}
+                <Container>
+                    <Card title="Minecraft">
+                        <Form>
                             {
                                 versions?.map((version: ResolvedVersion) => {
                                     return (
@@ -63,7 +58,7 @@ export default function VersionsPage() {
                                             key={version.id}
                                             className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
                                             onClick={() => {
-                                                window.store.set('launcher.launchVersion', version.id).then(() => navigate('home'));
+                                                window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
                                             }}
                                         >
                                             <div className="w-8 h-8 flex-shrink-0">
@@ -80,9 +75,9 @@ export default function VersionsPage() {
                                     );
                                 })
                             }
-                        </div>
-                    </div>
-                </div>
+                        </Form>
+                    </Card>
+                </Container>
 
             </div>
         </div>

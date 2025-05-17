@@ -1,9 +1,8 @@
 import type { MinecraftVersionList } from '@xmcl/installer';
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, JSX, useCallback, useEffect, useMemo, useState } from 'react';
 import ClientPage from './client';
 import { Fab } from '@mui/material';
 import ServerPage from './server';
-import TaskDetail from './task';
 
 // 定义下载任务类型
 type DownloadTask = {
@@ -15,13 +14,15 @@ type DownloadTask = {
 };
 
 export const Context = createContext<{
+    goTo: (target: JSX.Element | string) => void;
     versionManifest: MinecraftVersionList;
-    executeTask: (task: Omit<DownloadTask, 'id'>) => void;
+    executeTask: (task: DownloadTask) => Promise<void>;
     currentTask: DownloadTask | null;
     processPercentage: number;
         }>({
-            versionManifest: undefined,
-            executeTask: () => { },
+            goTo: null,
+            versionManifest: null,
+            executeTask: null,
             currentTask: null,
             processPercentage: 0,
         });
@@ -30,39 +31,49 @@ export default function InstallerPage() {
     const [selectedPage, setSelectedPage] = useState<string>('client');
     const [versionManifest, setVersionManifest] = useState<MinecraftVersionList>();
     const [currentTask, setCurrentTask] = useState<DownloadTask | null>(null);
-    const [processPercentage, setProcessPercentage] = useState(0);
+    const [processState, setProcessState] = useState<Tentative | null>();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [SubPage, setSubPage] = useState<JSX.Element | null>();
 
-    const executeTask = useCallback(async (taskParams: Omit<DownloadTask, 'id'>) => {
+    const goTo = (target: JSX.Element | string) => {
+        if (typeof target === 'string') {
+            setSubPage(null);
+            setSelectedPage(target);
+        }
+        else
+            setSubPage(target);
+    };
+
+    const executeTask = useCallback(async (taskParams: DownloadTask) => {
         if (isProcessing) {
             console.warn('A task is already in progress');
             return;
         }
 
-        const task = {
-            ...taskParams,
-            id: Date.now().toString()
-        };
+        const task = taskParams;
 
         setCurrentTask(task);
         setIsProcessing(true);
-        setProcessPercentage(0);
+        setProcessState(null);
 
         try {
             // 执行实际安装任务
-            window.launcher.onProcess((_, percentage: number) => setProcessPercentage(percentage));
+            window.launcher.onProcess((_, state: any) => {
+                setProcessState(state);
+                task.onProgress?.(state);
+            });
             window.launcher.onComplete(() => {
-                setProcessPercentage(0);
+                setProcessState(0);
                 setIsProcessing(false);
                 setCurrentTask(null);
                 taskParams.onComplete?.();
             });
             window.launcher.onFailed(() => {
-                setProcessPercentage(0);
+                setProcessState(0);
                 setIsProcessing(false);
                 setCurrentTask(null);
             });
-            await window.launcher.installTask(task.version);
+            await window.launcher.installTask(task.id, task.version);
         } catch (error) {
             console.error('Task failed:', error);
             taskParams.onError?.(error as Error);
@@ -74,11 +85,12 @@ export default function InstallerPage() {
     }, []);
 
     const contextValue = useMemo(() => ({
+        goTo,
         versionManifest,
         executeTask,
         currentTask,
-        processPercentage,
-    }), [versionManifest, executeTask, currentTask, processPercentage]);
+        processPercentage: processState,
+    }), [goTo, versionManifest, executeTask, currentTask, processState]);
 
     return (
         <>
@@ -110,8 +122,8 @@ export default function InstallerPage() {
 
                     <Context.Provider value={contextValue}>
                         {
-                            selectedPage === 'task' ?
-                                <TaskDetail />
+                            SubPage ?
+                                SubPage
                                 :
                                 selectedPage === 'client' ?
                                     <ClientPage />
@@ -124,7 +136,6 @@ export default function InstallerPage() {
                     </Context.Provider>
 
                     <Fab
-                        sx={{}}
                         className="z-10 fixed right-4 bottom-4"
                         onClick={() => setSelectedPage('task')}
                         color="primary"
@@ -178,11 +189,14 @@ export default function InstallerPage() {
                         </svg>
                     </Fab>
 
-                    <div
-                        style={{ width: `${processPercentage}%` }}
+                    {processState && <div
+                        style={{ width: `${processState.progress}%` }}
                         className="z-20 fixed inset-x-0 bottom-0 rounded-lg border-2 border-blue-600 transition-all"
                     >
-                    </div>
+                        <div className="relative">
+                            <label className="absolute left-4 bottom-2">{processState.taskName}</label>
+                        </div>
+                    </div>}
 
                 </div>
             </div>

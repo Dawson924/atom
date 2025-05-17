@@ -23,7 +23,7 @@ export default function App(): React.JSX.Element {
     }, [theme]);
 
     const fetch = async () => {
-        const theme = await window.store.get('appearance.theme');
+        const theme = await window.config.get('appearance.theme');
         if (theme) {
             setTheme(
                 createTheme({

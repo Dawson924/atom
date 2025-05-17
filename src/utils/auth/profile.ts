@@ -32,7 +32,7 @@ const updateAccount = (authenticateion: YggrasilAuthentication) => {
     if (authenticateion.selectedProfile) {
         PROFILES.set(`authenticationDatabase.${authenticateion.user.id}`, {
             accessToken: authenticateion.accessToken,
-            username: authenticateion.user.email,
+            username: authenticateion.user.username,
             profiles: {
                 [authenticateion.selectedProfile.id]: authenticateion.selectedProfile
             }

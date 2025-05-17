@@ -13,11 +13,19 @@ const store = new Store<{
             prefetched?: string
         }
     },
-    launcher: {
+    launch: {
         minecraftFolder: string,
         launchVersion: string,
         javaPath: string,
-        windowTitle: 'Atom Launcher'
+        windowTitle: string,
+        windowSize?: {
+            width: number,
+            height: number
+        },
+        extraArguments?: {
+            jvm?: string,
+            mc?: string
+        }
     }
 }>({
     defaults: {
@@ -31,11 +39,16 @@ const store = new Store<{
                 server: 'http://localhost:5400/yggdrasil'
             }
         },
-        launcher: {
+        launch: {
             minecraftFolder: getDefaultPath(),
             launchVersion: null,
             javaPath: null,
-            windowTitle: 'Atom Launcher'
+            windowTitle: 'Atom Launcher',
+            windowSize: {
+                width: 854,
+                height: 480
+            },
+            extraArguments: {},
         }
     },
     cwd: findStoreDir()

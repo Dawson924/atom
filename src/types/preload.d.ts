@@ -1,7 +1,7 @@
 import type { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
-import type { MinecraftVersionList } from '@xmcl/installer';
-import { GameProfileWithProperties } from '@xmcl/user';
-import { AccountSession } from '../libs/auth';
+import type { FabricArtifactVersion, MinecraftVersionList } from '@xmcl/installer';
+import type { GameProfileWithProperties, SetTextureOption } from '@xmcl/user';
+import type { AccountSession } from '../libs/auth';
 
 export interface ContextWindow {
     app: {
@@ -15,9 +15,10 @@ export interface ContextWindow {
         }) => Promise<void>,
         lookup: (uuid: string) => Promise<GameProfileWithProperties>,
         session: () => Promise<AccountSession>,
-        invalidate: () => Promise<void>
+        invalidate: () => Promise<void>,
+        setTexture: (option: SetTextureOption) => Promise<void>,
     },
-    store: {
+    config: {
         get: (key: string) => Promise<any>,
         set: (key: string, value: any) => Promise<void>,
         delete: (key: string) => Promise<any>,
@@ -26,9 +27,10 @@ export interface ContextWindow {
         folder: () => Promise<MinecraftFolder>,
         getVersions: () => Promise<ResolvedVersion[]>,
         getVersionManifest: () => Promise<MinecraftVersionList>,
+        getFabricArtifacts: () => Promise<FabricArtifactVersion[]>,
         findJava: () => Promise<T['Any']>,
-        install: (version: string) => Promise<void>,
-        installTask: (version: string) => Promise<void>,
+        install: (id: string, version: string) => Promise<void>,
+        installTask: (id: string, version: string) => Promise<void>,
         onProcess: (listener: (...args) => void) => void,
         onComplete: (listener: () => void) => void,
         onFailed: (listener: () => void) => void,

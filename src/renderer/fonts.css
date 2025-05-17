@@ -4,3 +4,8 @@
     font-weight: 100 900;
     font-style: normal;
 }
+
+@font-face {
+	font-family: 'Minecraft';
+	src: url('./assets/fonts/minecraft.woff2') format('woff2');
+}

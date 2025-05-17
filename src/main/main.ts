@@ -21,7 +21,7 @@ const services: BaseService[] = [];
 const createWindow = (): void => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        title: CONFIG.get('launcher.windowTitle') || 'Atom Launcher',
+        title: CONFIG.get('launch.windowTitle') || 'Atom Launcher',
         width: 890,
         height: 540,
         resizable: true,
@@ -56,7 +56,7 @@ const createWindow = (): void => {
 };
 
 const initializeServices = (ipc: IPCService) => {
-    setupMinecraftDirectory(CONFIG.get('launcher.minecraftFolder'));
+    setupMinecraftDirectory(CONFIG.get('launch.minecraftFolder'));
     services.push(
         new AppService(ipc, app),
         new LauncherService(ipc),
