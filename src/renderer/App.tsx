@@ -1,7 +1,8 @@
 import { createContext, useEffect, useState } from 'react';
 import Page from './pages/page';
 import { createTheme, Theme, ThemeProvider } from '@mui/material';
-import ModalProvider from './hoc/modals/providers';
+import { ModalProvider } from './hoc/modal';
+import { ToastProvider } from './hoc/toast';
 
 export const ThemeContext = createContext({
     theme: null,

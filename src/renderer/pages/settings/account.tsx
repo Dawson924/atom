@@ -4,7 +4,7 @@ import * as skinview3d from 'skinview3d';
 import type { AccountSession } from '../../../libs/auth';
 import { Card, Container, Form, FormInput } from '../../components/commons';
 import { getSkinData, setTexture } from '../../../utils/auth/skin.browser';
-import { SelectPromptModal, useModal } from '../../hoc/modals';
+import { SelectPromptModal, useModal } from '../../hoc/modal';
 import { requestSession } from '../../../utils/auth/session.mjs';
 
 export default function AccountPage() {
