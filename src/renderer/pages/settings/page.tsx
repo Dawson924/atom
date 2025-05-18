@@ -28,7 +28,7 @@ export default function SettingsPage() {
                             <div className="text-sm font-semibold overflow-hidden hover:overflow-auto">
                                 <MenuItem value="account" icon={(
                                     <svg
-                                        className="size-5"
+                                        className="size-full"
                                         viewBox="0 0 24 24"
                                         fill="none"
                                         stroke="currentColor"
@@ -47,24 +47,13 @@ export default function SettingsPage() {
                                     </svg>
                                 )} />
                                 <MenuItem value="appearance" icon={(
-                                    <svg
-                                        className="size-5"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                                        <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                                        <g id="SVGRepo_iconCarrier">
-                                            <path
-                                                d="M8,0 C12.4183,0 16,3.58172 16,8 C16,8.15958 15.9953,8.31807 15.9861,8.47533 C15.9328,9.38596 15.1095,10.0039 14.1974,10.0039 L11.0106,10.0039 C9.22875,10.0039 8.33642,12.1582 9.59635,13.4181 C10.4823,14.304 10.198,15.7959 8.95388,15.9437 C8.6411,15.9809 8.32278,16 8,16 C3.58172,16 0,12.4183 0,8 C0,3.58172 3.58172,0 8,0 Z M8,2 C4.68629,2 2,4.68629 2,8 C2,11.1538 4.4333,13.7393 7.52492,13.9815 C6.059,11.4506 7.82321,8.00391 11.0106,8.00391 L14,8.00391 C14,4.68629 11.3137,2 8,2 Z M5,8 C5.55228,8 6,8.44771 6,9 C6,9.55228 5.55228,10 5,10 C4.44772,10 4,9.55228 4,9 C4,8.44771 4.44772,8 5,8 Z M6,5 C6.55228,5 7,5.44772 7,6 C7,6.55228 6.55228,7 6,7 C5.44772,7 5,6.55228 5,6 C5,5.44772 5.44772,5 6,5 Z M9,4 C9.55228,4 10,4.44772 10,5 C10,5.55228 9.55228,6 9,6 C8.44771,6 8,5.55228 8,5 C8,4.44772 8.44771,4 9,4 Z"
-                                            />
-                                        </g>
+                                    <svg className="size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z" />
                                     </svg>
                                 )} />
                                 <MenuItem value="startup" icon={(
                                     <svg
-                                        className="size-5"
+                                        className="size-full"
                                         viewBox="0 0 16 16"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="currentColor"
@@ -102,7 +91,7 @@ const SelectedItem = ({ value, icon }: { value: string; icon: Tentative }) => (
         className="relative px-4 py-2 w-full space-x-1 flex justify-start items-center cursor-pointer text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-neutral-700"
     >
         <div className="absolute left-0.5 top-1/4 h-1/2 rounded-sm border-l-3 border-blue-600 dark:border-blue-400"></div>
-        {icon}
+        <div className="size-5">{icon}</div>
         <h4 className="text-xs font-bold font-[Inter] tracking-tighter uppercase">
             {value}
         </h4>
@@ -114,7 +103,7 @@ const UnselectedItem = ({ value, icon, onClick }: { value: string; icon: Tentati
         className="relative px-4 py-2 w-full space-x-1 flex justify-start items-center cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-neutral-700"
         onClick={onClick}
     >
-        {icon}
+        <div className="size-5">{icon}</div>
         <h4 className="text-xs font-bold font-[Inter] tracking-tighter uppercase">
             {value}
         </h4>
