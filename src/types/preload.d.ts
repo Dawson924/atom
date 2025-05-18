@@ -4,6 +4,9 @@ import type { GameProfileWithProperties, SetTextureOption } from '@xmcl/user';
 import type { AccountSession } from '../libs/auth';
 
 export interface ContextWindow {
+    api: {
+        invoke: (channel: string, ...args: string[]) => Promise<any>,
+    },
     app: {
         close: () => void,
         openDevTools: (mode: 'left' | 'right' | 'bottom' | 'undocked' | 'detach' = 'right') => void

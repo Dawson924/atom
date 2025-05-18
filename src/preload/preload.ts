@@ -1,3 +1,4 @@
+import './api';
 import './app';
 import './auth';
 import './config';
