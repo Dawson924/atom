@@ -34,9 +34,9 @@ function SelectPromptModal({
                 <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
                 <div className="relative p-4 w-full max-w-md max-h-full">
                     {/* Modal content */}
-                    <div className="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className="relative bg-white rounded-lg shadow-sm dark:bg-neutral-800">
                         {/* Modal header */}
-                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 dark:border-neutral-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
                             <button
                                 type="button"
@@ -71,11 +71,11 @@ function SelectPromptModal({
                                     return (
                                         <li className="cursor-pointer">
                                             <button
-                                                className="flex items-center p-3 w-full text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white cursor-pointer"
+                                                className="flex items-center p-3 w-full text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-neutral-700 dark:hover:bg-neutral-500 dark:text-white cursor-pointer"
                                                 onClick={() => handleSelect(item.onSelect)}
                                             >
                                                 {item.icon ? item.icon : null}
-                                                <span className="flex-1 ms-4 whitespace-nowrap text-left">
+                                                <span className="flex-1 ms-3 whitespace-nowrap text-left">
                                                     {item.label}
                                                 </span>
                                             </button>

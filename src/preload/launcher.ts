@@ -8,9 +8,10 @@ contextBridge.exposeInMainWorld('launcher', {
     findJava: () => ipcRenderer.invoke('launcher:find-java'),
     install: (id: string, version: string) => ipcRenderer.invoke('launcher:install', id, version),
     installTask: (id: string, version: string) => ipcRenderer.send('launcher:install-task', id, version),
-    installFabric: (version: string) => ipcRenderer.invoke('launcher:install-fabric', version),
+    installFabric: (id: string, version: string, loaderVersion: string) => ipcRenderer.invoke('launcher:install-fabric', id, version, loaderVersion),
     onProcess: (listener: (...args: any) => void) => ipcRenderer.on('on-progress', (event, percentage) => listener(event, percentage)),
     onComplete: (listener: () => void) => ipcRenderer.on('on-complete', listener),
     onFailed: (listener: () => void) => ipcRenderer.on('on-failed', listener),
+    removeListeners: (channel: string) => ipcRenderer.removeAllListeners(channel),
     launch: (version: string, javaPath: string) => ipcRenderer.invoke('launcher:launch', version, javaPath),
 });

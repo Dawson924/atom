@@ -6,6 +6,7 @@ import path from 'node:path';
 import { setupMinecraftDirectory } from '../utils';
 import { CONFIG } from '../services/storage';
 import { UtilityService } from '../services/ipc/util';
+import { DefaultWindowOptions } from '../libs/window';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (isReady) {
@@ -20,10 +21,17 @@ const services: BaseService[] = [];
 
 const createWindow = (): void => {
     // Create the browser window.
+    const windowSize = CONFIG.get<Tentative>('appearance.windowSize');
+    const windowSizeMode =
+        (windowSize.width === 0 && windowSize.height === 0) ? 'default' :
+            (windowSize.width < 0 && windowSize.height < 0) ? 'fullscreen' :
+                'customized';
+
     mainWindow = new BrowserWindow({
-        title: CONFIG.get('launch.windowTitle') || 'Atom Launcher',
-        width: 890,
-        height: 540,
+        title: CONFIG.get('appearance.windowTitle') || 'Atom Launcher',
+        width: windowSizeMode === 'customized' ? windowSize.width : DefaultWindowOptions.width,
+        height: windowSizeMode === 'customized' ? windowSize.height : DefaultWindowOptions.height,
+        icon: path.join(__dirname, './icons/icon.png'),
         resizable: true,
         center: true,
         frame: false,
@@ -52,7 +60,10 @@ const createWindow = (): void => {
         }
     });
 
-    mainWindow.setMinimumSize(890, 540);
+    if (windowSizeMode === 'fullscreen') {
+        mainWindow.maximize();
+    }
+    mainWindow.setMinimumSize(DefaultWindowOptions.width, DefaultWindowOptions.height);
 };
 
 const initializeServices = (ipc: IPCService) => {

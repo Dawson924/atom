@@ -1,5 +1,5 @@
 import { GameProfile, YggrasilAuthentication } from '@xmcl/user';
-import { AuthenticatedAccount } from '../../libs/auth';
+import type { AuthenticatedAccount } from '../../types/auth';
 import { PROFILES } from '../../services/storage';
 
 const hasAccount = () => {

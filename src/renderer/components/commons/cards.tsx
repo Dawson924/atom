@@ -8,7 +8,7 @@ type Props = {
 const Card: React.FC<Props> = ({ title, children }) => {
     return (
         <>
-            <div className="pb-2 mb-6 shadow-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 hover:shadow-sm hover:shadow-blue-400 dark:hover:shadow-neutral-800 transition-all group">
+            <div className="pb-2 mb-6 shadow-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 hover:shadow-sm hover:shadow-blue-300 dark:hover:shadow-neutral-800 transition-all group">
                 <div className="px-5 pt-3 mb-2">
                     <h2 className="text-xs font-bold font-[Inter] uppercase text-gray-900 dark:text-gray-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all">
                         {title}

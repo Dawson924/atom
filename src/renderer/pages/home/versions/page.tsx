@@ -1,5 +1,5 @@
-// @ts-ignore
-import GrassBlock from '../../../assets/images/minecraft/grass_block.png';
+import MinecraftIcon from '../../../assets/images/minecraft/grass_block.png';
+import FabricIcon from '../../../assets/images/minecraft/fabric.png';
 
 import { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import { useEffect, useState } from 'react';
@@ -49,34 +49,64 @@ export default function VersionsPage() {
                 </div>
 
                 <Container>
-                    <Card title="Minecraft">
+                    {versions.some(ver => ver.mainClass==='net.minecraft.client.main.Main') && <Card title="Minecraft">
                         <Form>
                             {
                                 versions?.map((version: ResolvedVersion) => {
-                                    return (
-                                        <div
-                                            key={version.id}
-                                            className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
-                                            onClick={() => {
-                                                window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
-                                            }}
-                                        >
-                                            <div className="w-8 h-8 flex-shrink-0">
-                                                <img
-                                                    src={GrassBlock}
-                                                    className="w-full h-full"
-                                                />
+                                    if (version.mainClass === 'net.minecraft.client.main.Main')
+                                        return (
+                                            <div
+                                                key={version.id}
+                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                                                onClick={() => {
+                                                    window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
+                                                }}
+                                            >
+                                                <div className="w-8 h-8 flex-shrink-0">
+                                                    <img
+                                                        src={MinecraftIcon}
+                                                        className="w-full h-full"
+                                                    />
+                                                </div>
+                                                <div className="w-full h-full flex flex-col items-start justify-center">
+                                                    <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
+                                                    <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
+                                                </div>
                                             </div>
-                                            <div className="w-full h-full flex flex-col items-start justify-center">
-                                                <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
-                                                <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
-                                            </div>
-                                        </div>
-                                    );
+                                        );
                                 })
                             }
                         </Form>
-                    </Card>
+                    </Card>}
+                    {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') && <Card title="Fabric">
+                        <Form>
+                            {
+                                versions?.map((version: ResolvedVersion) => {
+                                    if (version.mainClass === 'net.fabricmc.loader.impl.launch.knot.KnotClient')
+                                        return (
+                                            <div
+                                                key={version.id}
+                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                                                onClick={() => {
+                                                    window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
+                                                }}
+                                            >
+                                                <div className="w-8 h-8 flex-shrink-0">
+                                                    <img
+                                                        src={FabricIcon}
+                                                        className="w-full h-full"
+                                                    />
+                                                </div>
+                                                <div className="w-full h-full flex flex-col items-start justify-center">
+                                                    <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
+                                                    <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                })
+                            }
+                        </Form>
+                    </Card>}
                 </Container>
 
             </div>

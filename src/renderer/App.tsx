@@ -56,7 +56,9 @@ export default function App(): React.JSX.Element {
             <ThemeContext.Provider value={{ theme, fetch, setThemeMode }}>
                 <ThemeProvider theme={theme}>
                     <ModalProvider>
-                        <Page />
+                        <ToastProvider>
+                            <Page />
+                        </ToastProvider>
                     </ModalProvider>
                 </ThemeProvider>
             </ThemeContext.Provider>

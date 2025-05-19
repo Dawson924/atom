@@ -1,7 +1,7 @@
 import type { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import type { FabricArtifactVersion, MinecraftVersionList } from '@xmcl/installer';
 import type { GameProfileWithProperties, SetTextureOption } from '@xmcl/user';
-import type { AccountSession } from '../libs/auth';
+import type { AccountSession } from './auth';
 
 export interface ContextWindow {
     api: {
@@ -9,6 +9,8 @@ export interface ContextWindow {
     },
     app: {
         close: () => void,
+        minimize: () => void,
+        maximize: () => void,
         openDevTools: (mode: 'left' | 'right' | 'bottom' | 'undocked' | 'detach' = 'right') => void
     },
     auth: {
@@ -19,7 +21,7 @@ export interface ContextWindow {
         lookup: (uuid: string) => Promise<GameProfileWithProperties>,
         session: () => Promise<AccountSession>,
         invalidate: () => Promise<void>,
-        setTexture: (option: SetTextureOption) => Promise<void>,
+        setTexture: (option: SetTextureOption) => Promise<Tentative>,
     },
     config: {
         get: (key: string) => Promise<any>,
@@ -34,9 +36,11 @@ export interface ContextWindow {
         findJava: () => Promise<T['Any']>,
         install: (id: string, version: string) => Promise<void>,
         installTask: (id: string, version: string) => Promise<void>,
+        installFabric: (id: string, version: string, loaderVersion: string) => Promise<string>,
         onProcess: (listener: (...args) => void) => void,
         onComplete: (listener: () => void) => void,
         onFailed: (listener: () => void) => void,
+        removeListeners: (channel: string) => void,
         launch: (version: string, javaPath: string) => Promise<void>,
     },
     [context: string]: { [method: string]: (...args) => Promise<any> }

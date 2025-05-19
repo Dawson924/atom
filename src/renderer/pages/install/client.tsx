@@ -1,4 +1,4 @@
-import GrassBlock from '../../assets/images/minecraft/grass_block.png';
+import MinecraftIcon from '../../assets/images/minecraft/grass_block.png';
 import CommandBlock from '../../assets/images/minecraft/command_block.png';
 
 import { useContext } from 'react';
@@ -6,6 +6,7 @@ import { Context } from './page';
 import { MinecraftVersion } from '@xmcl/installer';
 import { toUTCStringPretty } from '../../../utils/date';
 import { Card, Container, Form } from '../../components/commons';
+import DownloadDetail from './download';
 
 export default function ClientPage() {
     const { versionManifest, goTo } = useContext(Context);
@@ -25,7 +26,7 @@ export default function ClientPage() {
                         >
                             <div className="w-8 h-8 flex-shrink-0">
                                 <img
-                                    src={GrassBlock}
+                                    src={MinecraftIcon}
                                     className="w-full h-full"
                                 />
                             </div>
@@ -60,13 +61,12 @@ export default function ClientPage() {
                                     key={version.id}
                                     className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
                                     onClick={async () => {
-                                        const Page = (await import('./download')).default;
-                                        goTo(<Page version={version.id} />);
+                                        goTo(<DownloadDetail version={version.id} />);
                                     }}
                                 >
                                     <div className="w-8 h-8 flex-shrink-0">
                                         <img
-                                            src={GrassBlock}
+                                            src={MinecraftIcon}
                                             className="w-full h-full"
                                         />
                                     </div>

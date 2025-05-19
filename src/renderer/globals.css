@@ -92,7 +92,6 @@ body {
 }
 
 #window .title-bar .header .header-right .traffic-light {
-  width: 50px;
   height: 32px;
   -webkit-app-region: no-drag;
 }

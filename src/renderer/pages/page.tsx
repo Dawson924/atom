@@ -19,7 +19,7 @@ const routes = [
                 fill="none"
                 viewBox="0 0 24 24"
             >
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
             </svg>
         ),
         element: <HomePage />,
@@ -154,7 +154,26 @@ export default function Page(): React.JSX.Element {
                     </div>
                     <div className="header-right">
                         <div className="traffic-light inline-flex justify-end items-center gap-2 mr-3">
-                            <div className="w-3 h-3 hover:cursor-pointer">
+                            <div className="size-3 hover:cursor-pointer" onClick={() => window.app.maximize()}>
+                                <svg
+                                    className="w-full h-full"
+                                    enableBackground="new 0 0 85.4 85.4"
+                                    viewBox="0 0 85.4 85.4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <g clipRule="evenodd" fillRule="evenodd">
+                                        <path
+                                            d="m42.7 85.4c23.6 0 42.7-19.1 42.7-42.7s-19.1-42.7-42.7-42.7-42.7 19.1-42.7 42.7 19.1 42.7 42.7 42.7z"
+                                            fill="#2dac2f"
+                                        />
+                                        <path
+                                            d="m42.7 81.8c21.6 0 39.1-17.5 39.1-39.1s-17.5-39.1-39.1-39.1-39.1 17.5-39.1 39.1 17.5 39.1 39.1 39.1z"
+                                            fill="#61c555"
+                                        />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div className="size-3 hover:cursor-pointer" onClick={() => window.app.minimize()}>
                                 <svg
                                     className="w-full h-full"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +191,7 @@ export default function Page(): React.JSX.Element {
                                     </g>
                                 </svg>
                             </div>
-                            <div className="w-3 h-3 hover:cursor-pointer" onClick={() => window.app.close()}>
+                            <div className="size-3 hover:cursor-pointer" onClick={() => window.app.close()}>
                                 <svg
                                     className="w-full h-full"
                                     xmlns="http://www.w3.org/2000/svg"

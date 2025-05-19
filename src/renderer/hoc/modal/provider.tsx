@@ -70,4 +70,4 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export default ModalProvider;
+export { ModalProvider };

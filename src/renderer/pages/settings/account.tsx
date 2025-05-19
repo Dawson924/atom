@@ -1,24 +1,41 @@
-import { Button } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Button, NativeSelect, TextField } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 import * as skinview3d from 'skinview3d';
-import type { AccountSession } from '../../../libs/auth';
+import type { AccountSession } from '../../../types/auth';
 import { Card, Container, Form, FormInput } from '../../components/commons';
 import { getSkinData, setTexture } from '../../../utils/auth/skin.browser';
 import { SelectPromptModal, useModal } from '../../hoc/modal';
 import { requestSession } from '../../../utils/auth/session.mjs';
+import { useToast } from '../../hoc/toast';
+
+const ANIM_SETS = [
+    skinview3d.IdleAnimation,
+    skinview3d.WalkingAnimation,
+    skinview3d.RunningAnimation,
+    skinview3d.CrouchAnimation,
+    skinview3d.FlyingAnimation,
+    skinview3d.HitAnimation,
+    skinview3d.WaveAnimation,
+];
 
 export default function AccountPage() {
     const { openModal } = useModal();
+    const { addToast } = useToast();
     const [session, setSession] = useState<AccountSession>();
     const [skinUrl, setSkinUrl] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [server, setServer] = useState<string>();
+    const [jar, setJar] = useState<string>();
+    const [animationSelect, setAnimationSelect] = useState<number>(0);
+    const [animationSpeed, setAnimationSpeed] = useState<number>(1);
     const [autoRotate, setAutoRotate] = useState<boolean>(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fetch = () => {
-        requestSession().then(setSession);
-        window.config.get('authentication.yggdrasilAgent.server').then(setServer);
+    const fetch = async () => {
+        await requestSession().then(setSession);
+        await window.config.get('authentication.yggdrasilAgent.server').then(setServer);
+        await window.config.get('authentication.yggdrasilAgent.jar').then(setJar);
     };
 
     useEffect(() => {
@@ -39,26 +56,28 @@ export default function AccountPage() {
             width: 260,
             height: 260,
             skin: skinUrl,
-            enableControls: true
+            enableControls: false
         });
         // Change camera FOV
         viewer.fov = 50;
         // Zoom out
         viewer.zoom = 1;
-        viewer.animation = new skinview3d.IdleAnimation();
-        viewer.animation.speed = 1;
+        viewer.animation = new ANIM_SETS[animationSelect];
+        viewer.animation.speed = animationSpeed;
         viewer.autoRotate = autoRotate;
         viewer.autoRotateSpeed = 0.75;
-    }, [skinUrl, session, autoRotate]);
+    }, [skinUrl, session, animationSelect, animationSpeed, autoRotate]);
 
     const handleLogin = async () => {
         await window.auth.login({ username, password });
-        fetch();
+        await fetch();
+        addToast('signed in successfully');
     };
 
     const handleLogout = async () => {
         await window.auth.invalidate();
-        fetch();
+        await fetch();
+        addToast('signed out successfully');
     };
 
     if (!session) return null;
@@ -98,7 +117,7 @@ export default function AccountPage() {
                 <div style={{ display: session.signedIn ? 'block' : 'none' }} className="px-7 mt-3">
                     <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center rounded-lg">
                         <div className="w-16">
-                            <h4 className="text-sm text-gray-900 dark:text-gray-50">Uid: </h4>
+                            <h4 className="text-sm text-gray-900 dark:text-gray-50">UID: </h4>
                         </div>
                         <div className="w-full max-w-lg min-w-[200px]">
                             <p className="text-sm text-gray-500 dark:text-gray-300">{session.profile?.id}</p>
@@ -113,12 +132,46 @@ export default function AccountPage() {
                         </div>
                     </div>
                 </div>
-                <div style={{ display: session.signedIn ? 'flex' : 'none' }} className="w-full flex-row justify-end items-center">
-                    <div className="w-full">
-                        <div className="px-7 mt-3 flex flex-row">
+                <hr style={{ display: session.signedIn ? 'block' : 'none' }} className="h-px my-2 bg-neutral-200 border-0 dark:bg-neutral-700"></hr>
+                <div
+                    style={{ display: session.signedIn ? 'flex' : 'none' }}
+                    className="w-full flex-row items-center"
+                >
+                    <div className="w-full max-w-[680px]">
+                        {/* Viewer Dashboard */}
+                        <div className="px-7 mt-3 space-y-5 flex flex-col">
                             <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                 <div>
-                                    <h4 className="text-sm text-nowrap text-gray-900 dark:text-gray-50">Auto Rotate</h4>
+                                    <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Animation</h4>
+                                </div>
+                                <div className="w-full">
+                                    <NativeSelect
+                                        className="h-6"
+                                        defaultValue={animationSelect}
+                                        onChange={(e) => setAnimationSelect(parseInt(e.target.value))}
+                                    >
+                                        <option value={0}>Idle</option>
+                                        <option value={1}>Walking</option>
+                                        <option value={2}>Running</option>
+                                    </NativeSelect>
+                                </div>
+                            </div>
+                            <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
+                                <div>
+                                    <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Speed</h4>
+                                </div>
+                                <div className="w-full">
+                                    <TextField
+                                        id="outlined-size-small"
+                                        size="small"
+                                        defaultValue={animationSpeed}
+                                        onChange={(e) => setAnimationSpeed(pre => parseInt(e.target.value) || pre)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
+                                <div>
+                                    <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Auto Rotation</h4>
                                 </div>
                                 <div className="w-full">
                                     <div
@@ -139,12 +192,13 @@ export default function AccountPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="px-7 mt-3 flex items-center justify-center">
+                        {/* Skin Upload */}
+                        <div className="px-6 mt-2 max-w-lg flex items-center justify-center">
                             <label
                                 htmlFor="dropzone-file"
-                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer transition-colors bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 hover:bg-gray-100 dark:border-neutral-600 dark:hover:border-gray-500"
+                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer transition-colors bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 hover:bg-gray-100 dark:border-neutral-600 dark:hover:border-gray-500"
                             >
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <div className="flex flex-col items-center justify-center pt-1 pb-2">
                                     <svg
                                         className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
                                         xmlns="http://www.w3.org/2000/svg"
@@ -167,10 +221,12 @@ export default function AccountPage() {
                                     </p>
                                 </div>
                                 <input
+                                    ref={fileInputRef}
                                     id="dropzone-file"
                                     type="file"
                                     className="hidden"
                                     onChange={async (e) => {
+                                        console.debug('started');
                                         const files = e.target.files;
 
                                         // Check if exactly one file is selected
@@ -189,42 +245,91 @@ export default function AccountPage() {
                                             // Convert the file to ArrayBuffer
                                             const arrayBuffer = await file.arrayBuffer();
                                             const skinData: Uint8Array = new Uint8Array(arrayBuffer);
-                                            const callback = (model: 'slim' | 'steve') => setTexture({
-                                                accessToken: session.account.accessToken,
-                                                uuid: session.profile.id,
-                                                type: 'skin',
-                                                texture: {
-                                                    data: skinData,
-                                                    metadata: {
-                                                        model: model
+                                            const callback = async (model: 'slim' | 'steve') => {
+                                                const result = await setTexture({
+                                                    accessToken: session.account.accessToken,
+                                                    uuid: session.profile.id,
+                                                    type: 'skin',
+                                                    texture: {
+                                                        data: skinData,
+                                                        metadata: {
+                                                            model: model
+                                                        }
                                                     }
+                                                });
+                                                if (!result.success) {
+                                                    addToast(result.error, 'error');
                                                 }
-                                            }).then(() => requestSession().then(setSession));
+                                                else {
+                                                    requestSession().then(setSession);
+                                                }
+                                            };
                                             openModal(SelectPromptModal, {
                                                 title: 'Choose Skin Model',
                                                 message: 'You can choose between two distinct arm models for their character: the classic Steve model and the Slim model.',
                                                 items: [
                                                     {
                                                         label: 'Steve',
+                                                        icon: (<svg
+                                                            className="size-5"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <g id="SVGRepo_bgCarrier" strokeWidth={0} />
+                                                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
+                                                            <g id="SVGRepo_iconCarrier">
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    clipRule="evenodd"
+                                                                    d="M15 3C15 2.44772 15.4477 2 16 2H20C21.1046 2 22 2.89543 22 4V8C22 8.55229 21.5523 9 21 9C20.4477 9 20 8.55228 20 8V5.41288L15.4671 9.94579C15.4171 9.99582 15.363 10.0394 15.3061 10.0767C16.3674 11.4342 17 13.1432 17 15C17 19.4183 13.4183 23 9 23C4.58172 23 1 19.4183 1 15C1 10.5817 4.58172 7 9 7C10.8559 7 12.5642 7.63197 13.9214 8.69246C13.9587 8.63539 14.0024 8.58128 14.0525 8.53118L18.5836 4H16C15.4477 4 15 3.55228 15 3ZM9 20.9963C5.68831 20.9963 3.00365 18.3117 3.00365 15C3.00365 11.6883 5.68831 9.00365 9 9.00365C12.3117 9.00365 14.9963 11.6883 14.9963 15C14.9963 18.3117 12.3117 20.9963 9 20.9963Z"
+                                                                    fill="#0F0F0F"
+                                                                />
+                                                            </g>
+                                                        </svg>),
                                                         onSelect: () => callback('steve'),
                                                     },
                                                     {
                                                         label: 'Slim',
+                                                        icon: (<svg
+                                                            className="size-5"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <g id="SVGRepo_bgCarrier" strokeWidth={0} />
+                                                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
+                                                            <g id="SVGRepo_iconCarrier">
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    clipRule="evenodd"
+                                                                    d="M20 9C20 13.0803 16.9453 16.4471 12.9981 16.9383C12.9994 16.9587 13 16.9793 13 17V19H14C14.5523 19 15 19.4477 15 20C15 20.5523 14.5523 21 14 21H13V22C13 22.5523 12.5523 23 12 23C11.4477 23 11 22.5523 11 22V21H10C9.44772 21 9 20.5523 9 20C9 19.4477 9.44772 19 10 19H11V17C11 16.9793 11.0006 16.9587 11.0019 16.9383C7.05466 16.4471 4 13.0803 4 9C4 4.58172 7.58172 1 12 1C16.4183 1 20 4.58172 20 9ZM6.00365 9C6.00365 12.3117 8.68831 14.9963 12 14.9963C15.3117 14.9963 17.9963 12.3117 17.9963 9C17.9963 5.68831 15.3117 3.00365 12 3.00365C8.68831 3.00365 6.00365 5.68831 6.00365 9Z"
+                                                                    fill="#0F0F0F"
+                                                                />
+                                                            </g>
+                                                        </svg>
+                                                        ),
                                                         onSelect: () => callback('slim'),
                                                     }
                                                 ],
                                             });
+                                            console.debug('Reached Bottom');
                                         } catch (error) {
                                             console.error('Error converting file to ArrayBuffer:', error);
                                             throw new Error('Error processing file');
+                                        } finally {
+                                            if (fileInputRef.current)
+                                                fileInputRef.current.value = '';
                                         }
                                     }}
                                 />
                             </label>
                         </div>
                     </div>
+                    {/* Skin Viewer 3D */}
                     <canvas id="skin-container"></canvas>
                 </div>
+                {/* Button Action Panel */}
                 <div className="px-7 my-2 space-x-4 inline-flex justify-start items-center">
                     {
                         !session.signedIn ?
@@ -252,6 +357,11 @@ export default function AccountPage() {
                         title="Server"
                         value={server}
                         onChange={(e) => window.config.set('authentication.yggdrasilAgent.server', e.target.value)}
+                    />
+                    <FormInput
+                        title="Authlib-Injector"
+                        value={jar}
+                        onChange={(e) => window.config.set('authentication.yggdrasilAgent.jar', e.target.value)}
                     />
                 </Form>
             </Card>

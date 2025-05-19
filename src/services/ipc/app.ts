@@ -12,6 +12,19 @@ export class AppService extends BaseService {
             }
         });
 
+        this.handle('minimize', () => {
+            this.ipc.mainWindow.minimize();
+        });
+
+        this.handle('maximize', () => {
+            if (this.ipc.mainWindow.isMaximized()) {
+                this.ipc.mainWindow.restore();
+            }
+            else {
+                this.ipc.mainWindow.maximize();
+            }
+        });
+
         this.handle('open-devtools', (_,
             mode: 'left' | 'right' | 'bottom' | 'undocked' | 'detach' = 'right'
         ) => {

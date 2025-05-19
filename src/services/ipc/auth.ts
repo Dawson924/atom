@@ -48,14 +48,27 @@ export class AuthService extends BaseService {
             deleteAccount();
         });
 
+        this.handle('signout', async () => {
+            throw new Error('Method not implemented');
+        });
+
         this.handle('set-texture', async (_, option: SetTextureOption) => {
             // 默认调用此方法前界面已拿到 session 数据
-            await this.client.setTexture({
-                accessToken: option.accessToken,
-                uuid: option.uuid,
-                type: option.type,
-                texture: option.texture
-            });
+            try {
+                await this.client.setTexture({
+                    accessToken: option.accessToken,
+                    uuid: option.uuid,
+                    type: option.type,
+                    texture: option.texture
+                });
+                return { success: true };
+            } catch (err) {
+                return {
+                    success: false,
+                    error: err.error,
+                    errorMessage: err.errorMessage
+                };
+            }
         });
     }
 

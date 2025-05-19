@@ -1,9 +1,12 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Container } from '../../components/commons';
 import { FabricArtifactVersion } from '@xmcl/installer';
-import GrassBlockIcon from '../../assets/images/minecraft/grass_block.png';
+import MinecraftIcon from '../../assets/images/minecraft/grass_block.png';
 import FabricIcon from '../../assets/images/minecraft/fabric.png';
 import { Context } from './page';
+import { Fab } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import { useToast } from '../../hoc/toast';
 
 export default function DownloadDetail({ version }: {
     version: string;
@@ -11,9 +14,10 @@ export default function DownloadDetail({ version }: {
     if (!version) return null;
 
     const { goTo, executeTask } = useContext(Context);
+    const { addToast } = useToast();
 
     const [versionName, setVersionName] = useState<string>(version);
-    const [selectedLoader, setLoader] = useState<{ loader: string; version: string }>();
+    const [selectedLoader, setLoader] = useState<{ loader: 'forge' | 'fabric' | 'neoForge'; version: string }>();
     const [fabricArtifacts, setFabricArtifacts] = useState<FabricArtifactVersion[]>();
     const [fabricExpanded, setFabricExpanded] = useState(false);
     const [contentHeight, setContentHeight] = useState(0);
@@ -42,9 +46,33 @@ export default function DownloadDetail({ version }: {
     }, [fabricArtifacts]); // 依赖项根据实际数据变化调整
 
     const executeDownload = async () => {
+        if (!version || !versionName) return;
+        if (!selectedLoader) {
+            await installMinecraft();
+        }
+        else if (selectedLoader.loader === 'fabric') {
+            await installFabric();
+        }
+    };
+
+    const installMinecraft = async () => {
         await executeTask({
             id: versionName,
-            version: version
+            version: version,
+            onComplete: () => {
+                console.debug('toast triggered.');
+                addToast(`installed successfully (${versionName})`);
+            },
+        });
+    };
+
+    const installFabric = async () => {
+        await executeTask({
+            id: versionName,
+            version: version,
+            loader: selectedLoader.loader,
+            loaderVersion: selectedLoader.version,
+            onComplete: () => addToast(`installed successfully (${versionName})`),
         });
     };
 
@@ -72,7 +100,11 @@ export default function DownloadDetail({ version }: {
                     </button>
                     <div className="size-8 flex-shrink-0">
                         <img
-                            src={GrassBlockIcon}
+                            src={selectedLoader && selectedLoader.loader === 'fabric' ?
+                                FabricIcon
+                                :
+                                MinecraftIcon
+                            }
                             className="w-full h-full"
                         />
                     </div>
@@ -158,7 +190,7 @@ export default function DownloadDetail({ version }: {
                     </div>
                 </div>
 
-                <div className="fixed left-1/2 bottom-4">
+                <div className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
                     <button
                         className="px-5 py-2 w-40 flex flex-row gap-2 justify-center items-center font-light text-white rounded-full bg-blue-600 hover:bg-blue-500 transition-all cursor-pointer"
                         onClick={executeDownload}
@@ -212,6 +244,16 @@ export default function DownloadDetail({ version }: {
                         Download
                     </button>
                 </div>
+
+                <Fab
+                    className="fixed right-4 bottom-4"
+                    size="medium"
+                    color="error"
+                    ria-label="add"
+                    onClick={() => setLoader(null)}
+                >
+                    <Delete />
+                </Fab>
             </Container>
         </>
     );

@@ -33,7 +33,7 @@ const getSkinData = async (uuid: string): Promise<YggdrasilTexture> => {
 };
 
 const setTexture = async (option: SetTextureOption) => {
-    await window.auth.setTexture(option);
+    return await window.auth.setTexture(option);
 };
 
 export {

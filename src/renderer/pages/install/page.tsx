@@ -1,13 +1,14 @@
 import type { MinecraftVersionList } from '@xmcl/installer';
 import { createContext, JSX, useCallback, useEffect, useMemo, useState } from 'react';
 import ClientPage from './client';
-import { Fab } from '@mui/material';
 import ServerPage from './server';
 
 // 定义下载任务类型
 type DownloadTask = {
     id: string;
     version: string;
+    loader?: 'forge' | 'fabric' | 'neoForge';
+    loaderVersion?: string;
     onProgress?: (percentage: number) => void;
     onComplete?: () => void;
     onError?: (error: Error) => void;
@@ -52,6 +53,10 @@ export default function InstallerPage() {
 
         const task = taskParams;
 
+        window.launcher.removeListeners('on-progress');
+        window.launcher.removeListeners('on-complete');
+        window.launcher.removeListeners('on-failed');
+
         setCurrentTask(task);
         setIsProcessing(true);
         setProcessState(null);
@@ -73,7 +78,12 @@ export default function InstallerPage() {
                 setIsProcessing(false);
                 setCurrentTask(null);
             });
-            await window.launcher.installTask(task.id, task.version);
+            if (!task.loader)
+                await window.launcher.installTask(task.id, task.version);
+            else if (task.loader === 'fabric' && task.loaderVersion)
+                await window.launcher.installFabric(task.id, task.version, task.loaderVersion);
+            else
+                throw new Error('Unsupported Mod Loader');
         } catch (error) {
             console.error('Task failed:', error);
             taskParams.onError?.(error as Error);
@@ -134,60 +144,6 @@ export default function InstallerPage() {
                                         <></>
                         }
                     </Context.Provider>
-
-                    <Fab
-                        className="z-10 fixed right-4 bottom-4"
-                        onClick={() => setSelectedPage('task')}
-                        color="primary"
-                        size="medium"
-                    >
-                        <svg
-                            className="size-5 text-white dark:text-gray-950"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            stroke="currentColor"
-                        >
-                            <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                            <g id="SVGRepo_iconCarrier">
-                                <title />
-                                <g id="Complete">
-                                    <g id="download">
-                                        <g>
-                                            <path
-                                                d="M3,12.3v7a2,2,0,0,0,2,2H19a2,2,0,0,0,2-2v-7"
-                                                fill="none"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                            />
-                                            <g>
-                                                <polyline
-                                                    data-name="Right"
-                                                    fill="none"
-                                                    id="Right-2"
-                                                    points="7.9 12.3 12 16.3 16.1 12.3"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                />
-                                                <line
-                                                    fill="none"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    x1={12}
-                                                    x2={12}
-                                                    y1="2.7"
-                                                    y2="14.2"
-                                                />
-                                            </g>
-                                        </g>
-                                    </g>
-                                </g>
-                            </g>
-                        </svg>
-                    </Fab>
 
                     {processState && <div
                         style={{ width: `${processState.progress}%` }}

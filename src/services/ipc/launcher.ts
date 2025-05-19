@@ -1,12 +1,12 @@
 import { launch, MinecraftFolder, Version } from '@xmcl/core';
 import { BaseService, IPCService } from '../core';
 import fs from 'fs/promises';
-import { FabricArtifactVersion, getFabricLoaders, getVersionList, InstallJarTask, InstallJsonTask, installTask, MinecraftVersionList } from '@xmcl/installer';
+import { FabricArtifactVersion, getFabricLoaderArtifact, getFabricLoaders, getVersionList, installDependenciesTask, installFabricByLoaderArtifact, InstallJarTask, InstallJsonTask, MinecraftVersionList } from '@xmcl/installer';
 import { IpcMainEvent } from 'electron';
 import { CONFIG, PROFILES } from '../storage';
 import axios from 'axios';
 import { resolveJarLocation } from '../../utils/auth/authlib-injector';
-import { AccountProfile, AuthenticatedAccount } from '../../libs/auth';
+import type { AccountProfile, AuthenticatedAccount } from '../../types/auth';
 import { FileSystem, openFileSystem } from '@xmcl/system';
 
 export class LauncherService extends BaseService {
@@ -35,11 +35,17 @@ export class LauncherService extends BaseService {
             await this.findAllVersions();
             const resolvedVersions = await Promise.all(
                 this.versions.map(async (item) => {
-                    const parsed = await Version.parse(this.minecraftFolder, item);
-                    return parsed;
+                    const resolved = await Version.parse(this.minecraftFolder, item);
+                    if (resolved.id.startsWith('.'))
+                        return;
+                    if (resolved.minecraftVersion.startsWith('.')) {
+                        const rawBase64 = resolved.minecraftVersion.slice(1);
+                        return { ...resolved, minecraftVersion: Buffer.from(rawBase64, 'base64').toString('utf-8') };
+                    }
+                    return resolved;
                 })
             );
-            return resolvedVersions;
+            return resolvedVersions.filter(Boolean);
         });
 
         this.handle('get-version-manifest', async () => {
@@ -47,6 +53,13 @@ export class LauncherService extends BaseService {
                 this.versionManifest = await getVersionList();
 
             return this.versionManifest;
+        });
+
+        this.handle('get-fabric-artifacts', async () => {
+            if (!this.fabricArtifacts)
+                this.fabricArtifacts = await getFabricLoaders();
+
+            return this.fabricArtifacts;
         });
 
         this.handle('find-java', async () => {
@@ -62,6 +75,7 @@ export class LauncherService extends BaseService {
                 parsedVersion.id = id;
                 await new InstallJarTask(parsedVersion, this.minecraftFolder, {}).startAndWait();
                 await fs.writeFile(this.minecraftFolder.getVersionJson(id), JSON.stringify(parsedVersion, null, 4));
+                await installDependenciesTask(await Version.parse(this.minecraftFolder, id)).startAndWait();
             }
             else {
                 throw new Error('[ATOM] failed: Cannot install requested version.\nVersion not found in manifest.');
@@ -81,11 +95,6 @@ export class LauncherService extends BaseService {
                         progress: task.progress / task.total * 100
                     });
                 },
-                onSucceed: () => event.sender.send('on-complete', {
-                    id: id,
-                    version: version,
-                    task: 'task:install-jar',
-                }),
                 onFailed: () => event.sender.send('on-failed', {
                     id: id,
                     version: version,
@@ -104,11 +113,6 @@ export class LauncherService extends BaseService {
                         progress: task.progress / task.total * 100,
                     });
                 },
-                onSucceed: () => event.sender.send('on-complete', {
-                    id: id,
-                    version: version,
-                    task: 'task:install-jar',
-                }),
                 onFailed: () => event.sender.send('on-failed', {
                     id: id,
                     version: version,
@@ -116,6 +120,85 @@ export class LauncherService extends BaseService {
                 })
             });
             await fs.writeFile(this.minecraftFolder.getVersionJson(id), JSON.stringify(parsedVersion, null, 4));
+            await installDependenciesTask(await Version.parse(this.minecraftFolder, id)).startAndWait({
+                onUpdate(task) {
+                    event.sender.send('on-progress', {
+                        id: id,
+                        version: version,
+                        task: 'task:install-deps',
+                        taskName: 'Assets & Libraries',
+                        progress: task.progress / task.total * 100
+                    });
+                },
+                onFailed: () => event.sender.send('on-failed', {
+                    id: id,
+                    version: version,
+                    task: 'task:install-deps',
+                })
+            });
+            event.sender.send('on-complete');
+        });
+
+        this.handle('install-fabric', async (event: IpcMainEvent, id: string, version: string, loaderVersion: string) => {
+            const inheritor = `.${Buffer.from(version).toString('base64')}`;
+            const mcInfo = await this.resolveVersion(version);
+            await new InstallJsonTask({ ...mcInfo, id: inheritor }, this.minecraftFolder, {}).startAndWait({
+                onUpdate(task) {
+                    event.sender.send('on-progress', {
+                        id: id,
+                        version: version,
+                        task: 'task:install-json',
+                        taskName: 'Minecraft Json',
+                        progress: task.progress / task.total * 100
+                    });
+                },
+                onFailed: () => event.sender.send('on-failed', {
+                    id: id,
+                    version: version,
+                    task: 'task:install-jar',
+                })
+            });
+            const resolvedVersion = await Version.parse(this.minecraftFolder, inheritor);
+            resolvedVersion.id = inheritor;
+            await new InstallJarTask(resolvedVersion, this.minecraftFolder, {}).startAndWait({
+                onUpdate(task) {
+                    event.sender.send('on-progress', {
+                        id: id,
+                        version: version,
+                        task: 'task:install-jar',
+                        taskName: 'Minecraft Jar',
+                        progress: task.progress / task.total * 100,
+                    });
+                },
+                onFailed: () => event.sender.send('on-failed', {
+                    id: id,
+                    version: version,
+                    task: 'task:install-jar',
+                })
+            });
+            await fs.writeFile(this.minecraftFolder.getVersionJson(inheritor), JSON.stringify(resolvedVersion, null, 4));
+            const fabricVersionName = await installFabricByLoaderArtifact(
+                await getFabricLoaderArtifact(version, loaderVersion),
+                this.minecraftFolder,
+                { versionId: id, inheritsFrom: inheritor }
+            );
+            await installDependenciesTask(await Version.parse(this.minecraftFolder, fabricVersionName)).startAndWait({
+                onUpdate(task) {
+                    event.sender.send('on-progress', {
+                        id: id,
+                        version: version,
+                        task: 'task:install-deps',
+                        taskName: 'Assets & Libraries',
+                        progress: task.progress / task.total * 100
+                    });
+                },
+                onFailed: () => event.sender.send('on-failed', {
+                    id: id,
+                    version: version,
+                    task: 'task:install-deps',
+                })
+            });
+            event.sender.send('on-complete');
         });
 
         this.handle('launch', async (_,
@@ -148,17 +231,6 @@ export class LauncherService extends BaseService {
                 accessToken: YggdrasilUser.accessToken
             });
         });
-
-        this.handle('get-fabric-artifacts', async () => {
-            if (!this.fabricArtifacts)
-                this.fabricArtifacts = await getFabricLoaders();
-
-            return this.fabricArtifacts;
-        });
-
-        // this.handle('install-fabric', async (_, id: string, version: string) => {
-
-        // });
     }
 
     private async findAllVersions() {

@@ -3,7 +3,12 @@ import Store from 'electron-store';
 
 const store = new Store<{
     appearance: {
-        theme: 'light' | 'dark'
+        theme: 'light' | 'dark',
+        windowTitle: string,
+        windowSize: {
+            width: number,
+            height: number
+        },
     },
     authentication: {
         mode: 'yggdrasil' | 'xbox' | 'offline',
@@ -17,11 +22,6 @@ const store = new Store<{
         minecraftFolder: string,
         launchVersion: string,
         javaPath: string,
-        windowTitle: string,
-        windowSize?: {
-            width: number,
-            height: number
-        },
         extraArguments?: {
             jvm?: string,
             mc?: string
@@ -31,6 +31,11 @@ const store = new Store<{
     defaults: {
         appearance: {
             theme: 'light',
+            windowTitle: 'Atom Launcher',
+            windowSize: {
+                width: 0,
+                height: 0
+            },
         },
         authentication: {
             mode: 'offline',
@@ -43,11 +48,6 @@ const store = new Store<{
             minecraftFolder: getDefaultPath(),
             launchVersion: null,
             javaPath: null,
-            windowTitle: 'Atom Launcher',
-            windowSize: {
-                width: 854,
-                height: 480
-            },
             extraArguments: {},
         }
     },
