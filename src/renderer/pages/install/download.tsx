@@ -13,18 +13,18 @@ export default function DownloadDetail({ version }: {
 }) {
     if (!version) return null;
 
-    const { goTo, executeTask } = useContext(Context);
+    const { goTo, executeTask, taskState } = useContext(Context);
     const { addToast } = useToast();
 
     const [versionName, setVersionName] = useState<string>(version);
-    const [selectedLoader, setLoader] = useState<{ loader: 'forge' | 'fabric' | 'neoForge'; version: string }>();
+    const [modLoader, setModLoader] = useState<{ loader: 'forge' | 'fabric' | 'neoForge'; version: string }>();
     const [fabricArtifacts, setFabricArtifacts] = useState<FabricArtifactVersion[]>();
     const [fabricExpanded, setFabricExpanded] = useState(false);
     const [contentHeight, setContentHeight] = useState(0);
     const contentRef = useRef(null);
 
     useEffect(() => {
-        window.launcher.getFabricArtifacts().then(setFabricArtifacts);
+        window.client.getFabricArtifacts().then(setFabricArtifacts);
     }, []);
 
     useEffect(() => {
@@ -47,10 +47,11 @@ export default function DownloadDetail({ version }: {
 
     const executeDownload = async () => {
         if (!version || !versionName) return;
-        if (!selectedLoader) {
+        goTo('client');
+        if (!modLoader) {
             await installMinecraft();
         }
-        else if (selectedLoader.loader === 'fabric') {
+        else if (modLoader.loader === 'fabric') {
             await installFabric();
         }
     };
@@ -59,10 +60,7 @@ export default function DownloadDetail({ version }: {
         await executeTask({
             id: versionName,
             version: version,
-            onComplete: () => {
-                console.debug('toast triggered.');
-                addToast(`installed successfully (${versionName})`);
-            },
+            onComplete: () => addToast(`installed successfully (${version})`),
         });
     };
 
@@ -70,9 +68,9 @@ export default function DownloadDetail({ version }: {
         await executeTask({
             id: versionName,
             version: version,
-            loader: selectedLoader.loader,
-            loaderVersion: selectedLoader.version,
-            onComplete: () => addToast(`installed successfully (${versionName})`),
+            loader: modLoader.loader,
+            loaderVersion: modLoader.version,
+            onComplete: () => addToast(`installed successfully (${version})`),
         });
     };
 
@@ -100,7 +98,7 @@ export default function DownloadDetail({ version }: {
                     </button>
                     <div className="size-8 flex-shrink-0">
                         <img
-                            src={selectedLoader && selectedLoader.loader === 'fabric' ?
+                            src={modLoader && modLoader.loader === 'fabric' ?
                                 FabricIcon
                                 :
                                 MinecraftIcon
@@ -133,8 +131,8 @@ export default function DownloadDetail({ version }: {
                                 <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Fabric</h2>
                                 <span className="text-sm text-gray-500">
                                     {
-                                        selectedLoader && selectedLoader.loader === 'fabric' ?
-                                            selectedLoader.version
+                                        modLoader && modLoader.loader === 'fabric' ?
+                                            modLoader.version
                                             :
                                             'Choose a version'
                                     }
@@ -146,7 +144,7 @@ export default function DownloadDetail({ version }: {
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
-                                className="w-6 h-6 text-gray-400"
+                                className="size-5 text-gray-400"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -169,7 +167,7 @@ export default function DownloadDetail({ version }: {
                                         key={artifact.version}
                                         className="w-full h-12 flex flex-row space-x-4 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
                                         onClick={() => {
-                                            setLoader({ loader: 'fabric', version: artifact.version });
+                                            setModLoader({ loader: 'fabric', version: artifact.version });
                                             setFabricExpanded(false);
                                         }}
                                     >
@@ -190,7 +188,7 @@ export default function DownloadDetail({ version }: {
                     </div>
                 </div>
 
-                <div className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
+                <div style={{ display: taskState && 'none' }} className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
                     <button
                         className="px-5 py-2 w-40 flex flex-row gap-2 justify-center items-center font-light text-white rounded-full bg-blue-600 hover:bg-blue-500 transition-all cursor-pointer"
                         onClick={executeDownload}
@@ -250,7 +248,7 @@ export default function DownloadDetail({ version }: {
                     size="medium"
                     color="error"
                     ria-label="add"
-                    onClick={() => setLoader(null)}
+                    onClick={() => setModLoader(null)}
                 >
                     <Delete />
                 </Fab>

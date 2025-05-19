@@ -14,25 +14,33 @@ type DownloadTask = {
     onError?: (error: Error) => void;
 };
 
+type TaskState = {
+    id: string;
+    version: string;
+    task: `task:${string}`;
+    taskName: string;
+    progress: number;
+};
+
 export const Context = createContext<{
     goTo: (target: JSX.Element | string) => void;
     versionManifest: MinecraftVersionList;
     executeTask: (task: DownloadTask) => Promise<void>;
-    currentTask: DownloadTask | null;
-    processPercentage: number;
+    currentTask?: DownloadTask;
+    taskState?: TaskState;
         }>({
             goTo: null,
             versionManifest: null,
             executeTask: null,
             currentTask: null,
-            processPercentage: 0,
+            taskState: null,
         });
 
 export default function InstallerPage() {
     const [selectedPage, setSelectedPage] = useState<string>('client');
     const [versionManifest, setVersionManifest] = useState<MinecraftVersionList>();
     const [currentTask, setCurrentTask] = useState<DownloadTask | null>(null);
-    const [processState, setProcessState] = useState<Tentative | null>();
+    const [taskState, setTaskState] = useState<TaskState | null>();
     const [isProcessing, setIsProcessing] = useState(false);
     const [SubPage, setSubPage] = useState<JSX.Element | null>();
 
@@ -53,35 +61,35 @@ export default function InstallerPage() {
 
         const task = taskParams;
 
-        window.launcher.removeListeners('on-progress');
-        window.launcher.removeListeners('on-complete');
-        window.launcher.removeListeners('on-failed');
+        window.client.removeListeners('on-progress');
+        window.client.removeListeners('on-complete');
+        window.client.removeListeners('on-failed');
 
         setCurrentTask(task);
         setIsProcessing(true);
-        setProcessState(null);
+        setTaskState(null);
 
         try {
             // 执行实际安装任务
-            window.launcher.onProcess((_, state: any) => {
-                setProcessState(state);
+            window.client.onProcess((_, state: any) => {
+                setTaskState(state);
                 task.onProgress?.(state);
             });
-            window.launcher.onComplete(() => {
-                setProcessState(0);
+            window.client.onComplete(() => {
+                setTaskState(null);
                 setIsProcessing(false);
                 setCurrentTask(null);
                 taskParams.onComplete?.();
             });
-            window.launcher.onFailed(() => {
-                setProcessState(0);
+            window.client.onFailed(() => {
+                setTaskState(null);
                 setIsProcessing(false);
                 setCurrentTask(null);
             });
             if (!task.loader)
-                await window.launcher.installTask(task.id, task.version);
+                await window.client.installTask(task.id, task.version);
             else if (task.loader === 'fabric' && task.loaderVersion)
-                await window.launcher.installFabric(task.id, task.version, task.loaderVersion);
+                await window.client.installFabric(task.id, task.version, task.loaderVersion);
             else
                 throw new Error('Unsupported Mod Loader');
         } catch (error) {
@@ -91,7 +99,7 @@ export default function InstallerPage() {
     }, [isProcessing]);
 
     useEffect(() => {
-        window.launcher.getVersionManifest().then(res => setVersionManifest(res));
+        window.client.getVersionManifest().then(res => setVersionManifest(res));
     }, []);
 
     const contextValue = useMemo(() => ({
@@ -99,8 +107,10 @@ export default function InstallerPage() {
         versionManifest,
         executeTask,
         currentTask,
-        processPercentage: processState,
-    }), [goTo, versionManifest, executeTask, currentTask, processState]);
+        taskState,
+    }), [goTo, versionManifest, executeTask, currentTask, taskState]);
+
+    if (!versionManifest) return null;
 
     return (
         <>
@@ -145,12 +155,12 @@ export default function InstallerPage() {
                         }
                     </Context.Provider>
 
-                    {processState && <div
-                        style={{ width: `${processState.progress}%` }}
+                    {taskState && <div
+                        style={{ width: `${taskState.progress}%` }}
                         className="z-20 fixed inset-x-0 bottom-0 rounded-lg border-2 border-blue-600 transition-all"
                     >
                         <div className="relative">
-                            <label className="absolute left-4 bottom-2">{processState.taskName}</label>
+                            <label className="absolute left-4 bottom-2">{taskState.taskName}</label>
                         </div>
                     </div>}
 

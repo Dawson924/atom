@@ -1,7 +1,7 @@
-import { getFaceSkinFromBase64 } from '../../utils';
-import { BaseService, IPCService } from '../core';
+import { getFaceSkinFromBase64 } from '../../../utils';
+import { IPCServiceController, IPCService } from '../core';
 
-export class UtilityService extends BaseService {
+export class UtilityController extends IPCServiceController {
     protected override namespace = 'util';
     protected override ipc: IPCService;
 

@@ -23,12 +23,7 @@ export interface ContextWindow {
         invalidate: () => Promise<void>,
         setTexture: (option: SetTextureOption) => Promise<Tentative>,
     },
-    config: {
-        get: (key: string) => Promise<any>,
-        set: (key: string, value: any) => Promise<void>,
-        delete: (key: string) => Promise<any>,
-    },
-    launcher: {
+    client: {
         folder: () => Promise<MinecraftFolder>,
         getVersions: () => Promise<ResolvedVersion[]>,
         getVersionManifest: () => Promise<MinecraftVersionList>,
@@ -42,6 +37,11 @@ export interface ContextWindow {
         onFailed: (listener: () => void) => void,
         removeListeners: (channel: string) => void,
         launch: (version: string, javaPath: string) => Promise<void>,
+    },
+    config: {
+        get: (key: string) => Promise<any>,
+        set: (key: string, value: any) => Promise<void>,
+        delete: (key: string) => Promise<any>,
     },
     [context: string]: { [method: string]: (...args) => Promise<any> }
 }

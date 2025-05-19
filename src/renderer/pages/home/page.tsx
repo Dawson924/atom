@@ -112,7 +112,7 @@ export default function HomePage() {
                                     if (!versionName)
                                         return navigate('home/versions');
 
-                                    window.launcher.launch(versionName, await window.config.get('launch.javaPath'));
+                                    window.client.launch(versionName, await window.config.get('launch.javaPath'));
                                 }}
                             >
                                 <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">Launch</h3>

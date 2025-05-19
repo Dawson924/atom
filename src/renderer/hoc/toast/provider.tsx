@@ -26,10 +26,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         setToasts((prev) => [...prev, { id, type, message, duration, isShow: true, close: closeToast }]);
     };
 
-    useEffect(() => {
-        console.debug(toasts);
-    }, [toasts]);
-
     return (
         <ToastContext.Provider value={{ addToast }}>
             {children}

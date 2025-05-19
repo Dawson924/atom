@@ -1,11 +1,10 @@
 import { app, BrowserWindow } from 'electron';
 import isReady from 'electron-squirrel-startup';
-import { BaseService, IPCService } from '../services/core';
-import { AppService, AuthService, LauncherService, StoreService } from '../services/ipc';
+import { IPCServiceController, IPCService } from './services/core';
+import { AppServiceController, AuthServiceController, ClientServiceController, StoreServiceController, UtilityController } from './services/controllers';
 import path from 'node:path';
 import { setupMinecraftDirectory } from '../utils';
-import { CONFIG } from '../services/storage';
-import { UtilityService } from '../services/ipc/util';
+import { CONFIG } from './services/storage';
 import { DefaultWindowOptions } from '../libs/window';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -17,7 +16,7 @@ declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
 let mainWindow: BrowserWindow;
-const services: BaseService[] = [];
+const controllers: IPCServiceController[] = [];
 
 const createWindow = (): void => {
     // Create the browser window.
@@ -68,12 +67,12 @@ const createWindow = (): void => {
 
 const initializeServices = (ipc: IPCService) => {
     setupMinecraftDirectory(CONFIG.get('launch.minecraftFolder'));
-    services.push(
-        new AppService(ipc, app),
-        new LauncherService(ipc),
-        new StoreService(ipc),
-        new AuthService(ipc),
-        new UtilityService(ipc),
+    controllers.push(
+        new AppServiceController(ipc, app),
+        new AuthServiceController(ipc),
+        new ClientServiceController(ipc),
+        new StoreServiceController(ipc),
+        new UtilityController(ipc),
     );
 };
 

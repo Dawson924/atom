@@ -1,6 +1,6 @@
 import { GameProfile, YggrasilAuthentication } from '@xmcl/user';
 import type { AuthenticatedAccount } from '../../types/auth';
-import { PROFILES } from '../../services/storage';
+import { PROFILES } from '../../main/services/storage';
 
 const hasAccount = () => {
     const select = loadUserSelect();

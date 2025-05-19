@@ -14,8 +14,8 @@ export default function VersionsPage() {
     const [versions, setLocalVersions] = useState<ResolvedVersion[]>();
 
     useEffect(() => {
-        window.launcher.folder().then(res => setFolder(res));
-        window.launcher.getVersions().then(res => setLocalVersions(res || []));
+        window.client.folder().then(res => setFolder(res));
+        window.client.getVersions().then(res => setLocalVersions(res || []));
     }, []);
 
     if (!folder || !versions) return null;

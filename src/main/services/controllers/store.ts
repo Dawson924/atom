@@ -1,9 +1,9 @@
 import { ensureDir } from 'fs-extra';
-import { BaseService, IPCService } from '../core';
-import { findStoreDir } from '../../utils';
+import { IPCServiceController, IPCService } from '../core';
+import { findStoreDir } from '../../../utils';
 import { CONFIG } from '../storage';
 
-export class StoreService extends BaseService {
+export class StoreServiceController extends IPCServiceController {
     protected override namespace = 'store';
     protected override ipc;
 

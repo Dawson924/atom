@@ -1,6 +1,6 @@
 import type { HandlerFunction, IPCService } from './ipc';
 
-export abstract class BaseService {
+export abstract class IPCServiceController {
     /**
      * 服务命名空间（自动添加至通道名前）
      */

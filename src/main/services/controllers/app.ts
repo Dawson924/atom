@@ -1,6 +1,6 @@
-import { BaseService, IPCService } from '../core';
+import { IPCServiceController, IPCService } from '../core';
 
-export class AppService extends BaseService {
+export class AppServiceController extends IPCServiceController {
     protected override namespace = 'app';
     protected override ipc;
     protected app: Electron.App;

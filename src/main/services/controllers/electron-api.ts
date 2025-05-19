@@ -1,9 +1,9 @@
 import { dialog } from 'electron';
-import { BaseService, IPCService } from '../core';
+import { IPCServiceController, IPCService } from '../core';
 
 type DialogProperties = ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[];
 
-export class ElectronAPIService extends BaseService {
+export class ElectronAPIController extends IPCServiceController {
     protected override namespace: string;
     protected override ipc: IPCService;
 

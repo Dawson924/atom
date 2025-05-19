@@ -1,4 +1,4 @@
-import { findStoreDir, getDefaultPath } from '../../utils';
+import { findStoreDir, getDefaultPath } from '../../../utils';
 import Store from 'electron-store';
 
 const store = new Store<{
