@@ -6,6 +6,7 @@ import path from 'node:path';
 import { setupMinecraftDirectory } from '../utils';
 import { CONFIG } from './services/storage';
 import { DefaultWindowOptions } from '../libs/window';
+import { CacheServiceController } from './services/controllers/cache';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (isReady) {
@@ -70,6 +71,7 @@ const initializeServices = (ipc: IPCService) => {
     controllers.push(
         new AppServiceController(ipc, app),
         new AuthServiceController(ipc),
+        new CacheServiceController(ipc),
         new ClientServiceController(ipc),
         new StoreServiceController(ipc),
         new UtilityController(ipc),

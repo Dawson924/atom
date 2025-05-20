@@ -2,6 +2,7 @@ import { SetTextureOption, YggdrasilThirdPartyClient } from '@xmcl/user';
 import { CONFIG, PROFILES } from './storage';
 import { deleteAccount, getCurrentAccount, getCurrentProfile, hasAccount, updateAccount } from '../../utils/auth';
 import { IpcMainEvent } from 'electron';
+import { ERROR_CODES, errorResponse } from '../../libs/response';
 
 export class AuthenticateService {
     private signedIn: boolean;
@@ -12,19 +13,26 @@ export class AuthenticateService {
         username: string;
         password: string;
     }) {
-        const result = await this.client.login({
-            username,
-            password,
-            clientToken: this.clientToken,
-            requestUser: true
-        });
-        await this.validateAccount();
-        updateAccount(result);
+        try {
+            const result = await this.client.login({
+                username,
+                password,
+                clientToken: this.clientToken,
+                requestUser: true
+            });
+            await this.validateAccount();
+            updateAccount(result);
+        } catch(error) {
+            throw errorResponse(ERROR_CODES.BAD_REQUEST);
+        }
     }
 
     async lookup(_: IpcMainEvent, uuid: string) {
-        const gameProfile = await this.client.lookup(uuid);
-        return gameProfile;
+        try {
+            return await this.client.lookup(uuid);
+        } catch (error) {
+            throw errorResponse(ERROR_CODES.BAD_REQUEST);
+        }
     }
 
     async session() {
@@ -38,8 +46,12 @@ export class AuthenticateService {
     }
 
     async invalidate() {
-        await this.client.invalidate(getCurrentAccount().accessToken, this.clientToken);
-        deleteAccount();
+        try {
+            await this.client.invalidate(getCurrentAccount().accessToken, this.clientToken);
+            deleteAccount();
+        } catch (error) {
+            throw errorResponse(ERROR_CODES.BAD_REQUEST);
+        }
     }
 
     async setTexture(_: IpcMainEvent, option: SetTextureOption) {
@@ -51,13 +63,8 @@ export class AuthenticateService {
                 type: option.type,
                 texture: option.texture
             });
-            return { success: true };
-        } catch (err) {
-            return {
-                success: false,
-                error: err.error,
-                errorMessage: err.errorMessage
-            };
+        } catch (error) {
+            throw errorResponse(ERROR_CODES.BAD_REQUEST);
         }
     }
 

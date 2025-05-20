@@ -3,6 +3,7 @@ import { useNavigate } from '../../router';
 import * as headview3d from 'headview3d';
 import type { AccountSession } from '../../../types/auth';
 import { requestSession } from '../../../utils/auth/session.mjs';
+import { getSkinData } from '../../../utils/auth/skin.browser';
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -19,29 +20,58 @@ export default function HomePage() {
     }, []);
 
     useEffect(() => {
+        let isMounted = true;
+
         if (session && session.signedIn) {
-            window.auth.lookup(session.profile.id).then(async (profile) => {
-                const textureInfo = JSON.parse(atob(profile.properties.textures));
-                setSkinUrl(textureInfo.textures.SKIN.url);
-            });
+            getSkinData(session.profile.id)
+                .then(skinData => {
+                    if (!isMounted) return;
+                    setSkinUrl(skinData.url);
+                }).catch((error) => {
+                    console.error('Auth lookup failed:', error);
+                    if (isMounted) setSkinUrl('');
+                });
         }
         else {
             setLaunchMode('offline');
         }
+
+        return () => { isMounted = false; };
     }, [session]);
 
     useEffect(() => {
         if (!session || (!session.signedIn && launchMode === 'yggdrasil')) return;
 
-        const viewer = new headview3d.SkinViewer({
-            canvas: document.getElementById('skin-container') as HTMLCanvasElement,
-            width: 100,
-            height: 100,
-            skin: (session.signedIn && launchMode==='yggdrasil') ? skinUrl : 'http://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb',
-            enableControls: false
-        });
-        viewer.zoom = 2.5;
-        viewer.fov = 25;
+        const shouldUseDefaultSkin = !(session.signedIn && launchMode === 'yggdrasil');
+        const finalSkinUrl = shouldUseDefaultSkin
+            ? 'http://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb'
+            : skinUrl;
+
+        if (!shouldUseDefaultSkin && !skinUrl) return; // 等待皮肤加载完成
+
+        const canvas = document.getElementById('skin-container');
+        if (!(canvas instanceof HTMLCanvasElement)) return;
+
+        let viewer: headview3d.SkinViewer | null = null;
+
+        try {
+            viewer = new headview3d.SkinViewer({
+                canvas,
+                width: 100,
+                height: 100,
+                skin: finalSkinUrl,
+                enableControls: false
+            });
+
+            viewer.zoom = 2.5;
+            viewer.fov = 25;
+        } catch (error) {
+            console.error('Viewer initialization failed:', error);
+        }
+
+        return () => {
+            viewer?.dispose();
+        };
     }, [skinUrl, session, launchMode]);
 
 
@@ -89,9 +119,9 @@ export default function HomePage() {
                                             <div>
                                                 <h3
                                                     className="text-lg font-light text-gray-700 dark:text-gray-300 cursor-pointer"
-                                                    onClick={() => navigate('settings')}
+                                                    onClick={() => navigate('settings?page=account')}
                                                 >
-                                                        You haven't signed in
+                                                    You haven't signed in
                                                 </h3>
                                             </div>
                                         </div>)

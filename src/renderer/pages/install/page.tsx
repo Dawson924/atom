@@ -110,8 +110,6 @@ export default function InstallerPage() {
         taskState,
     }), [goTo, versionManifest, executeTask, currentTask, taskState]);
 
-    if (!versionManifest) return null;
-
     return (
         <>
             <div className="relative h-main bg-blue-100 dark:bg-neutral-700">

@@ -3,8 +3,10 @@ import StartupPage from './startup';
 import AppearancePage from './appearance';
 import AccountPage from './account';
 
-export default function SettingsPage() {
-    const [selectedPage, setSelectedPage] = useState<string>('account');
+export default function SettingsPage({ page }: {
+    page?: string;
+}) {
+    const [selectedPage, setSelectedPage] = useState<string>(page || 'account');
 
     const MenuItem = ({ value, icon }: {
         value: string;

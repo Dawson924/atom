@@ -69,7 +69,7 @@ function SelectPromptModal({
                             <ul className="my-4 space-y-3">
                                 {items.map((item) => {
                                     return (
-                                        <li className="cursor-pointer">
+                                        <li key={item.label} className="cursor-pointer">
                                             <button
                                                 className="flex items-center p-3 w-full text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-neutral-700 dark:hover:bg-neutral-500 dark:text-white cursor-pointer"
                                                 onClick={() => handleSelect(item.onSelect)}

@@ -2,6 +2,7 @@ import type { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import type { FabricArtifactVersion, MinecraftVersionList } from '@xmcl/installer';
 import type { GameProfileWithProperties, SetTextureOption } from '@xmcl/user';
 import type { AccountSession } from './auth';
+import { IPCResponse } from '../libs/response';
 
 export interface ContextWindow {
     api: {
@@ -21,7 +22,12 @@ export interface ContextWindow {
         lookup: (uuid: string) => Promise<GameProfileWithProperties>,
         session: () => Promise<AccountSession>,
         invalidate: () => Promise<void>,
-        setTexture: (option: SetTextureOption) => Promise<Tentative>,
+        setTexture: (option: SetTextureOption) => Promise<void>,
+    },
+    cache: {
+        get: (key: string) => Promise<any>,
+        set: (key: string, value: any) => Promise<void>,
+        delete: (key: string) => Promise<any>,
     },
     client: {
         folder: () => Promise<MinecraftFolder>,

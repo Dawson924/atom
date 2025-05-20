@@ -2,34 +2,44 @@ import type { SetTextureOption, YggdrasilTexture, YggdrasilTexturesInfo } from '
 
 const DEFAULT_SKIN_URL = 'htts://www.xxxyyy.zzz';
 
-const getTexturesInfo = async (uuid: string): Promise<YggdrasilTexturesInfo> => {
-    return new Promise((ok) => {
-        window.auth.lookup(uuid).then(async (profile) => {
-            const textureInfo: YggdrasilTexturesInfo = JSON.parse(atob(profile.properties.textures));
-            ok(textureInfo);
-        });
+const getTexturesInfo = (uuid: string): Promise<YggdrasilTexturesInfo> => {
+    return new Promise((ok, no) => {
+        window.auth.lookup(uuid)
+            .then(profile => {
+                const textureInfo: YggdrasilTexturesInfo = JSON.parse(atob(profile.properties.textures));
+                ok(textureInfo);
+            })
+            .catch(_ => no(_));
     });
 };
 
-const getTextures = async (uuid: string): Promise<YggdrasilTexturesInfo['textures']> => {
-    const texturesInfo = await getTexturesInfo(uuid);
-    return texturesInfo.textures;
+const getTextures = (uuid: string): Promise<YggdrasilTexturesInfo['textures']> => {
+    return new Promise((ok, no) => {
+        getTexturesInfo(uuid)
+            .then(texturesInfo => ok(texturesInfo.textures))
+            .catch(_ => no(_));
+    });
 };
 
-const getSkinData = async (uuid: string): Promise<YggdrasilTexture> => {
-    const textures = await getTextures(uuid);
-    if (!textures.SKIN) {
-        return {
-            url: DEFAULT_SKIN_URL,
-            metadata: {
-                model: 'steve',
-                isDefault: true,
-            }
-        };
-    }
-    else {
-        return textures.SKIN;
-    }
+const getSkinData = (uuid: string): Promise<YggdrasilTexture> => {
+    return new Promise((ok, no) => {
+        getTextures(uuid)
+            .then(textures => {
+                if (!textures.SKIN) {
+                    ok({
+                        url: DEFAULT_SKIN_URL,
+                        metadata: {
+                            model: 'steve',
+                            isDefault: true,
+                        }
+                    });
+                }
+                else {
+                    ok(textures.SKIN);
+                }
+            })
+            .catch(_ => no(_));
+    });
 };
 
 const setTexture = async (option: SetTextureOption) => {

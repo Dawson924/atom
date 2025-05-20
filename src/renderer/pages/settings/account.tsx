@@ -34,6 +34,11 @@ export default function AccountPage() {
 
     const fetch = async () => {
         await requestSession().then(setSession);
+        await window.cache.get('account').then(account => {
+            if (!account) return;
+            setUsername(account.username);
+            setPassword(account.password);
+        });
         await window.config.get('authentication.yggdrasilAgent.server').then(setServer);
         await window.config.get('authentication.yggdrasilAgent.jar').then(setJar);
     };
@@ -43,40 +48,70 @@ export default function AccountPage() {
     }, []);
 
     useEffect(() => {
-        if (session && session.signedIn) {
-            getSkinData(session.profile.id).then(skinData => setSkinUrl(skinData.url));
+        let isMounted = true;
+        if (session?.signedIn) {
+            getSkinData(session.profile.id)
+                .then(skinData => {
+                    if (!isMounted) return;
+                    setSkinUrl(skinData.url);
+                }).catch((error) => {
+                    console.error('Auth lookup failed:', error);
+                    if (isMounted) setSkinUrl('');
+                });
         }
+        return () => { isMounted = false; };
     }, [session]);
 
     useEffect(() => {
-        if (!skinUrl || !session || !session.signedIn) return;
+        if (!session || !session.signedIn) return;
 
-        const viewer = new skinview3d.SkinViewer({
-            canvas: document.getElementById('skin-container') as HTMLCanvasElement,
-            width: 260,
-            height: 260,
-            skin: skinUrl,
-            enableControls: false
-        });
-        // Change camera FOV
-        viewer.fov = 50;
-        // Zoom out
-        viewer.zoom = 1;
-        viewer.animation = new ANIM_SETS[animationSelect];
-        viewer.animation.speed = animationSpeed;
-        viewer.autoRotate = autoRotate;
-        viewer.autoRotateSpeed = 0.75;
+        if (!skinUrl) return; // 等待皮肤加载完成
+
+        const canvas = document.getElementById('skin-container');
+        if (!(canvas instanceof HTMLCanvasElement)) return;
+
+        let viewer: skinview3d.SkinViewer | null = null;
+
+        try {
+            viewer = new skinview3d.SkinViewer({
+                canvas,
+                width: 200,
+                height: 260,
+                skin: skinUrl,
+                enableControls: false
+            });
+            // Change camera FOV
+            viewer.fov = 50;
+            // Zoom out
+            viewer.zoom = 0.92;
+            viewer.animation = new ANIM_SETS[animationSelect];
+            viewer.animation.speed = animationSpeed;
+            viewer.autoRotate = autoRotate;
+            viewer.autoRotateSpeed = 0.75;
+        }
+        catch (error) {
+            console.error('Viewer initialization failed:', error);
+        }
+
+        return () => {
+            viewer?.dispose();
+        };
     }, [skinUrl, session, animationSelect, animationSpeed, autoRotate]);
 
     const handleLogin = async () => {
-        await window.auth.login({ username, password });
-        await fetch();
-        addToast('signed in successfully');
+        window.cache.set('account', { username, password });
+        window.auth.login({ username, password })
+            .then(() => {
+                requestSession().then(setSession);
+                addToast('signed in successfully');
+            }).catch(_ => {
+                addToast(_.message, 'error');
+            });
     };
 
     const handleLogout = async () => {
         await window.auth.invalidate();
-        await fetch();
+        requestSession().then(setSession);
         addToast('signed out successfully');
     };
 
@@ -85,8 +120,8 @@ export default function AccountPage() {
     return (
         <Container>
             <Card title={session.signedIn ? `Hello, ${session.profile.name}` : 'Sign In'}>
+                {/* Sign-in Form */}
                 <div style={{ display: session.signedIn ? 'none' : 'flex' }} className="flex-col px-5">
-                    {/* Form */}
                     <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                         <div>
                             <h4 className="text-sm text-gray-900 dark:text-gray-50">Username</h4>
@@ -132,13 +167,13 @@ export default function AccountPage() {
                         </div>
                     </div>
                 </div>
-                <hr style={{ display: session.signedIn ? 'block' : 'none' }} className="h-px my-2 bg-neutral-200 border-0 dark:bg-neutral-700"></hr>
+                <hr style={{ display: session.signedIn ? 'block' : 'none' }} className="h-px my-6 bg-neutral-200 border-0 dark:bg-neutral-700"></hr>
                 <div
                     style={{ display: session.signedIn ? 'flex' : 'none' }}
-                    className="w-full flex-row items-center"
+                    className="mb-3 w-full flex-row justify-between items-end"
                 >
-                    <div className="w-full max-w-[680px]">
-                        {/* Viewer Dashboard */}
+                    {/* Viewer Dashboard */}
+                    <div className="w-full max-w-[420px]">
                         <div className="px-7 mt-3 space-y-5 flex flex-col">
                             <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                 <div>
@@ -153,6 +188,10 @@ export default function AccountPage() {
                                         <option value={0}>Idle</option>
                                         <option value={1}>Walking</option>
                                         <option value={2}>Running</option>
+                                        <option value={3}>Crouch</option>
+                                        <option value={4}>Flying</option>
+                                        <option value={5}>Hit</option>
+                                        <option value={6}>Wave</option>
                                     </NativeSelect>
                                 </div>
                             </div>
@@ -226,7 +265,6 @@ export default function AccountPage() {
                                     type="file"
                                     className="hidden"
                                     onChange={async (e) => {
-                                        console.debug('started');
                                         const files = e.target.files;
 
                                         // Check if exactly one file is selected
@@ -246,22 +284,45 @@ export default function AccountPage() {
                                             const arrayBuffer = await file.arrayBuffer();
                                             const skinData: Uint8Array = new Uint8Array(arrayBuffer);
                                             const callback = async (model: 'slim' | 'steve') => {
-                                                const result = await setTexture({
-                                                    accessToken: session.account.accessToken,
-                                                    uuid: session.profile.id,
-                                                    type: 'skin',
-                                                    texture: {
-                                                        data: skinData,
-                                                        metadata: {
-                                                            model: model
+                                                try {
+                                                    // 1. 确保先完成皮肤上传
+                                                    await setTexture({
+                                                        accessToken: session.account.accessToken,
+                                                        uuid: session.profile.id,
+                                                        type: 'skin',
+                                                        texture: {
+                                                            data: skinData,
+                                                            metadata: {
+                                                                model: model
+                                                            }
                                                         }
-                                                    }
-                                                });
-                                                if (!result.success) {
-                                                    addToast(result.error, 'error');
-                                                }
-                                                else {
-                                                    requestSession().then(setSession);
+                                                    });
+
+                                                    // 2. 获取最新 session 数据（带重试机制）
+                                                    const fetchWithRetry = async (attempt = 0): Promise<string | undefined> => {
+                                                        const newSession = await requestSession();
+                                                        const newSkinData = await getSkinData(newSession.profile.id);
+
+                                                        // 验证皮肤是否更新成功
+                                                        if (newSkinData.url !== skinUrl) {
+                                                            return newSkinData.url;
+                                                        }
+                                                        else if (attempt > 10) {
+                                                            return;
+                                                        }
+                                                        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+                                                        return fetchWithRetry(attempt + 1);
+                                                    };
+
+                                                    // 3. 更新 session 和皮肤状态
+                                                    const verifiedSkinUrl = await fetchWithRetry();
+                                                    if (!verifiedSkinUrl)
+                                                        throw new Error('Cannot verify the skin url');
+                                                    else
+                                                        setSkinUrl(verifiedSkinUrl);
+
+                                                } catch (error) {
+                                                    addToast('failed to upload skin texture', 'error');
                                                 }
                                             };
                                             openModal(SelectPromptModal, {
@@ -313,7 +374,6 @@ export default function AccountPage() {
                                                     }
                                                 ],
                                             });
-                                            console.debug('Reached Bottom');
                                         } catch (error) {
                                             console.error('Error converting file to ArrayBuffer:', error);
                                             throw new Error('Error processing file');
@@ -327,29 +387,31 @@ export default function AccountPage() {
                         </div>
                     </div>
                     {/* Skin Viewer 3D */}
-                    <canvas id="skin-container"></canvas>
+                    <canvas id="skin-container" className="z-10"></canvas>
+                    {/* Sign-out */}
+                    <Button
+                        className="mr-4 min-w-24 text-nowrap"
+                        variant="outlined"
+                        color="error"
+                        onClick={handleLogout}
+                    >
+                        Sign out
+                    </Button>
                 </div>
                 {/* Button Action Panel */}
-                <div className="px-7 my-2 space-x-4 inline-flex justify-start items-center">
-                    {
-                        !session.signedIn ?
-                            <Button
-                                variant="contained"
-                                color="success"
-                                onClick={handleLogin}
-                            >
-                                Login
-                            </Button>
-                            :
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={handleLogout}
-                            >
-                                Sign out
-                            </Button>
-                    }
-                </div>
+                {
+                    !session.signedIn &&
+                    <div className="px-7 my-2 space-x-4 inline-flex justify-start items-center">
+
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleLogin}
+                        >
+                            Login
+                        </Button>
+                    </div>
+                }
             </Card>
             <Card title="Yggdrasil Agent">
                 <Form>
