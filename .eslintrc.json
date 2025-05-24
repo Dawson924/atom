@@ -22,13 +22,14 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-tslint-comment": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
     "import/no-unresolved": "off",
 
     // Indent
     "indent": ["warn", 4],
 
     // Quotes related
-    "quotes": ["error", "single", { "avoidEscape": true }],
+    "quotes": ["warn", "single", { "avoidEscape": true }],
     "@typescript-eslint/quotes": ["error", "single", { "avoidEscape": true }],
 
     // JSX
