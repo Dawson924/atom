@@ -1,13 +1,13 @@
-import React, { ChangeEventHandler } from 'react';
+import clsx from 'clsx';
+import { AnchorHTMLAttributes, InputHTMLAttributes } from 'react';
 
 type FormItemProps = {
     title?: string;
     name?: string;
     value: any;
-    onChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>
 };
 
-const Form: React.FC<React.AnchorHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit }) => {
+const Form: React.FC<AnchorHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit }) => {
     return (
         <form onSubmit={onSubmit}>
             <div className="flex flex-col px-5">
@@ -17,9 +17,9 @@ const Form: React.FC<React.AnchorHTMLAttributes<HTMLFormElement>> = ({ children,
     );
 };
 
-const FormInput: React.FC<FormItemProps> = ({ title, name, value, onChange }) => {
+const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>> = ({ title, name, value, onChange }) => {
     return (
-        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
+        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div style={{ display: title ? 'block' : 'none' }} className="w-32 shrink-0">
                 <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
             </div>
@@ -37,17 +37,18 @@ const FormInput: React.FC<FormItemProps> = ({ title, name, value, onChange }) =>
 
 const FormSelect: React.FC<FormItemProps & {
     options: { value: string, label: string }[];
-}> = ({ title: name, value, onChange, options }) => {
+} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, options }) => {
     return (
-        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
+        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div className="w-32 shrink-0">
-                <h3 className="text-sm text-gray-900 dark:text-gray-50">{name}</h3>
+                <h3 className="text-sm text-gray-900 dark:text-gray-50">{title}</h3>
             </div>
             <div className="w-full min-w-80">
                 <div className="relative items-center">
                     <select
+                        name={name}
                         className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow appearance-none cursor-pointer"
-                        value={value}
+                        defaultValue={value}
                         onChange={onChange}
                     >
                         {options.map((opt) => {
@@ -63,4 +64,35 @@ const FormSelect: React.FC<FormItemProps & {
     );
 };
 
-export { Form, FormInput, FormSelect };
+const FormRangeInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>> = ({
+    title,
+    name,
+    style,
+    className,
+    min,
+    max,
+    value,
+    onChange,
+}) => {
+    return (
+        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
+            <div style={{ display: title ? 'block' : 'none' }} className="w-32 shrink-0">
+                <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
+            </div>
+            <div className="flex flex-row w-full min-w-80">
+                <input
+                    type="range"
+                    name={name}
+                    style={style}
+                    className={clsx('transparent h-1 w-full cursor-pointer appearance-none border-transparent bg-neutral-200 dark:bg-neutral-600', className)}
+                    min={min}
+                    max={max}
+                    defaultValue={value}
+                    onChange={onChange}
+                />
+            </div>
+        </div>
+    );
+};
+
+export { Form, FormInput, FormSelect, FormRangeInput };

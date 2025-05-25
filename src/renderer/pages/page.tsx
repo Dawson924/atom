@@ -279,7 +279,7 @@ export default function Page(): React.JSX.Element {
                 </Box>
             </div>
 
-            <main className="h-main bg-neutral-50 overflow-hidden">
+            <main className="h-main overflow-hidden">
                 <RouteProvider routes={routes} path={path} setPath={setPath} />
             </main>
         </div>

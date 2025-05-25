@@ -1,12 +1,11 @@
 import { app, BrowserWindow } from 'electron';
 import isReady from 'electron-squirrel-startup';
-import { IPCServiceController, IPCService } from './services/core';
-import { AppServiceController, AuthServiceController, ClientServiceController, StoreServiceController, UtilityController } from './services/controllers';
+import { IPCServiceController, IPCService } from './core';
+import { AppServiceController, AuthServiceController, CacheServiceController, ClientServiceController, ConfigServiceController, UtilityController } from './controllers';
 import path from 'node:path';
-import { setupMinecraftDirectory } from '../utils';
-import { CONFIG } from './services/storage';
-import { DefaultWindowOptions } from '../libs/window';
-import { CacheServiceController } from './services/controllers/cache';
+import { setupMinecraftDirectory } from './utils/folder';
+import { CONFIG } from './services/store';
+import { DefaultWindowOptions } from './libs/window';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (isReady) {
@@ -73,7 +72,7 @@ const initializeServices = (ipc: IPCService) => {
         new AuthServiceController(ipc),
         new CacheServiceController(ipc),
         new ClientServiceController(ipc),
-        new StoreServiceController(ipc),
+        new ConfigServiceController(ipc),
         new UtilityController(ipc),
     );
 };

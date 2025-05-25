@@ -4,9 +4,9 @@ import CommandBlock from '../../assets/images/minecraft/command_block.png';
 import { useContext } from 'react';
 import { Context } from './page';
 import { MinecraftVersion } from '@xmcl/installer';
-import { toUTCStringPretty } from '../../../utils/date';
-import { Card, Container, Form } from '../../components/commons';
-import DownloadDetail from './download';
+import { toUTCStringPretty } from '../../../common/utils/date';
+import { Card, Container, Form } from '@renderer/components/commons';
+import ClientInfoPage from './client-info';
 
 export default function ClientPage() {
     const { versionManifest, goTo } = useContext(Context);
@@ -17,12 +17,16 @@ export default function ClientPage() {
         <>
             <Container>
                 {/* Latest */}
-                <Card title="Latest">
+                <Card
+                    title="Latest"
+                    className="mb-6"
+                >
                     {/* Minecraft latest release & preview version */}
                     <div className="flex flex-col px-5">
                         <div
                             key={versionManifest.latest.release}
                             className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                            onClick={() => goTo(<ClientInfoPage version={versionManifest.latest.release} />)}
                         >
                             <div className="w-8 h-8 flex-shrink-0">
                                 <img
@@ -38,6 +42,7 @@ export default function ClientPage() {
                         <div
                             key={versionManifest.latest.snapshot}
                             className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                            onClick={() => goTo(<ClientInfoPage version={versionManifest.latest.snapshot} />)}
                         >
                             <div className="w-8 h-8 flex-shrink-0">
                                 <img
@@ -53,16 +58,16 @@ export default function ClientPage() {
                     </div>
                 </Card>
                 {/* Minecraft Releases */}
-                <Card title={`Release (${versionManifest.versions.length})`}>
+                <Card
+                    title={`Release (${versionManifest.versions.length})`}
+                >
                     <Form>
                         {versionManifest.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion) => {
                             return (
                                 <div
                                     key={version.id}
                                     className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
-                                    onClick={async () => {
-                                        goTo(<DownloadDetail version={version.id} />);
-                                    }}
+                                    onClick={() => goTo(<ClientInfoPage version={version.id} />)}
                                 >
                                     <div className="w-8 h-8 flex-shrink-0">
                                         <img

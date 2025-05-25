@@ -1,22 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '../../router';
 import * as headview3d from 'headview3d';
-import type { AccountSession } from '../../../types/auth';
-import { requestSession } from '../../../utils/auth/session.mjs';
-import { getSkinData } from '../../../utils/auth/skin.browser';
+import type { AccountSession } from '@common/types/auth';
+import { getSkinData } from '../../utils/auth/skin';
+import { ClientService, ConfigService, UserService } from '@renderer/api';
+import { useToast } from '@renderer/hoc/toast';
 
 export default function HomePage() {
     const navigate = useNavigate();
+    const { addToast } = useToast();
 
     const [versionName, setVersionName] = useState<string | undefined>();
     const [session, setSession] = useState<AccountSession>();
     const [launchMode, setLaunchMode] = useState<string>('offline');
     const [skinUrl, setSkinUrl] = useState<string>('');
+    const [offlineName, setOfflineName] = useState<string>();
 
     useEffect(() => {
-        window.config.get('launch.launchVersion').then(setVersionName);
-        window.config.get('authentication.mode').then(setLaunchMode);
-        requestSession().then(setSession);
+        ConfigService.get('launch.launchVersion').then(setVersionName);
+        ConfigService.get('authentication.mode').then(setLaunchMode);
+        UserService.getSelectedProfile()
+            .then(UserService.getProfile)
+            .then(i => i.name)
+            .then(setOfflineName);
+        UserService.session().then(setSession);
     }, []);
 
     useEffect(() => {
@@ -31,9 +38,6 @@ export default function HomePage() {
                     console.error('Auth lookup failed:', error);
                     if (isMounted) setSkinUrl('');
                 });
-        }
-        else {
-            setLaunchMode('offline');
         }
 
         return () => { isMounted = false; };
@@ -77,7 +81,7 @@ export default function HomePage() {
 
     const changeLaunchMode = (mode: string) => {
         setLaunchMode(mode);
-        window.config.set('authentication.mode', mode);
+        ConfigService.set('authentication.mode', mode);
     };
 
     if (!session) return null;
@@ -86,8 +90,9 @@ export default function HomePage() {
         <>
             <div className="h-main bg-blue-100 dark:bg-neutral-700">
                 <div className="flex flex-row">
-
+                    {/* Side Dashboard */}
                     <div className="z-10 w-[300px] h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
+                        {/* Upper Mode switch & Skin viewer */}
                         <div className="px-4 mt-4 h-full flex flex-col items-center">
                             {/* Segmented Controls */}
                             <div className="inline-flex h-9 w-auto items-baseline justify-start rounded-lg bg-gray-100 dark:bg-neutral-900 p-1">
@@ -126,28 +131,44 @@ export default function HomePage() {
                                             </div>
                                         </div>)
                                         :
-                                        (<div className="w-full h-full flex flex-col justify-center items-center">
-                                            <canvas id="skin-container"></canvas>
-                                            <div>
-                                                <h3 className="text-lg font-light text-gray-700 dark:text-gray-300">Steve</h3>
-                                            </div>
-                                        </div>)
+                                        offlineName ?
+                                            (<div className="w-full h-full flex flex-col justify-center items-center">
+                                                <canvas id="skin-container"></canvas>
+                                                <div>
+                                                    <h3 className="text-lg font-light text-gray-700 dark:text-gray-300">{offlineName}</h3>
+                                                </div>
+                                            </div>)
+                                            :
+                                            (<div className="w-full h-full flex flex-col justify-center items-center">
+                                                <canvas id="skin-container"></canvas>
+                                                <input
+                                                    className="w-2/3 h-8 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
+                                                    defaultValue={'asd'}
+                                                />
+                                            </div>)
                                 }
                             </div>
                         </div>
+                        {/* Bottom Button Action Panel */}
                         <div className="p-5 w-full h-40 space-y-4">
-                            <div
-                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer border rounded-lg border-blue-400 hover:bg-blue-100 dark:border-blue-500 dark:hover:bg-blue-500"
+                            {/* Launch button */}
+                            <button
+                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer disabled:cursor-not-allowed border rounded-lg border-blue-400 disabled:border-gray-100 hover:bg-blue-100 disabled:bg-neutral-100 dark:border-blue-500 dark:hover:bg-blue-500"
                                 onClick={async () => {
                                     if (!versionName)
                                         return navigate('home/versions');
+                                    else if (launchMode !== 'offline' && !session.signedIn) {
+                                        return addToast('You haven\'t signed in', 'error');
+                                    }
 
-                                    window.client.launch(versionName, await window.config.get('launch.javaPath'));
+                                    ClientService.launch(versionName);
                                 }}
+                                disabled={launchMode !== 'offline' && !session.signedIn}
                             >
                                 <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">Launch</h3>
                                 <p className="text-xs font-[Inter] text-gray-400">{versionName ?? 'Choose a minecraft version'}</p>
-                            </div>
+                            </button>
+                            {/* Nav buttons */}
                             <div className="grid grid-cols-2 space-x-2">
                                 <div
                                     className="h-9 flex flex-col justify-center items-center transition-all cursor-pointer border rounded-md border-gray-500 hover:bg-gray-100 dark:border-gray-400 dark:hover:bg-gray-200 group"

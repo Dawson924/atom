@@ -6,6 +6,15 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@layer base {
+  html {
+    @apply bg-white dark:bg-neutral-900;
+  }
+  body {
+    @apply bg-white dark:bg-neutral-900;
+  }
+}
+
 @theme {
     --animate-slide-in: slide-in 0.25s ease-out forwards;
     --animate-slide-out: slide-out 0.25s ease-in forwards;

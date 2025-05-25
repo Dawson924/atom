@@ -25,7 +25,7 @@ const RouteProvider = ({ routes, path, setPath }: {
             const target = matchRoute(segments, routes);
             target.params = params;
             if (target) {
-                setPath(path);
+                setPath(segments.join('/'));
                 setPage(target);
             }
         }

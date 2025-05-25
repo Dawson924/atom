@@ -2,6 +2,7 @@ import { SetTextureOption } from '@xmcl/user';
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('auth', {
+    offline: (username: string) => ipcRenderer.invoke('auth:offline', username),
     login: ({ username, password }: {
         username: string;
         password: string;

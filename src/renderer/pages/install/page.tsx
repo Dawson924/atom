@@ -2,6 +2,8 @@ import type { MinecraftVersionList } from '@xmcl/installer';
 import { createContext, JSX, useCallback, useEffect, useMemo, useState } from 'react';
 import ClientPage from './client';
 import ServerPage from './server';
+import ModsPage from './mods';
+import { ClientService } from '@renderer/api';
 
 // 定义下载任务类型
 type DownloadTask = {
@@ -61,9 +63,9 @@ export default function InstallerPage() {
 
         const task = taskParams;
 
-        window.client.removeListeners('on-progress');
-        window.client.removeListeners('on-complete');
-        window.client.removeListeners('on-failed');
+        window.api.removeListeners('on-progress');
+        window.api.removeListeners('on-complete');
+        window.api.removeListeners('on-failed');
 
         setCurrentTask(task);
         setIsProcessing(true);
@@ -71,25 +73,25 @@ export default function InstallerPage() {
 
         try {
             // 执行实际安装任务
-            window.client.onProcess((_, state: any) => {
+            window.api.onProcess((_, state: any) => {
                 setTaskState(state);
                 task.onProgress?.(state);
             });
-            window.client.onComplete(() => {
+            window.api.onComplete(() => {
                 setTaskState(null);
                 setIsProcessing(false);
                 setCurrentTask(null);
                 taskParams.onComplete?.();
             });
-            window.client.onFailed(() => {
+            window.api.onFailed(() => {
                 setTaskState(null);
                 setIsProcessing(false);
                 setCurrentTask(null);
             });
             if (!task.loader)
-                await window.client.installTask(task.id, task.version);
+                await ClientService.install(task.id, task.version);
             else if (task.loader === 'fabric' && task.loaderVersion)
-                await window.client.installFabric(task.id, task.version, task.loaderVersion);
+                await ClientService.installFabric(task.id, task.version, task.loaderVersion);
             else
                 throw new Error('Unsupported Mod Loader');
         } catch (error) {
@@ -99,7 +101,9 @@ export default function InstallerPage() {
     }, [isProcessing]);
 
     useEffect(() => {
-        window.client.getVersionManifest().then(res => setVersionManifest(res));
+        ClientService.getVersionManifest()
+            .then(res => setVersionManifest(res))
+            .catch(console.debug);
     }, []);
 
     const contextValue = useMemo(() => ({
@@ -116,16 +120,35 @@ export default function InstallerPage() {
                 <div className="flex flex-row">
 
                     <div className="z-10 w-32 h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
-                        <div className="w-full h-full shadow-md">
+                        <div className="w-full h-full">
+                            {/* Minecraft Section */}
                             <div className="px-5 pt-3 mb-1">
                                 <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-neutral-400">
                                     Minecraft
                                 </h2>
                             </div>
-                            <nav aria-label="Main" className="flex flex-col justify-start items-start h-full">
-                                {/* Minecraft Links */}
+                            <nav aria-label="Main" className="flex flex-col justify-start items-start">
                                 {
                                     ['client', 'server'].map(item => {
+                                        return (
+                                            item === selectedPage ?
+                                                <SelectedItem key={item} value={item} />
+                                                :
+                                                <UnselectedItem key={item} value={item} onClick={() => setSelectedPage(item)} />
+                                        );
+                                    })
+                                }
+                            </nav>
+
+                            {/* Community Resource */}
+                            <div className="px-5 pt-3 mb-1">
+                                <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-neutral-400">
+                                    Community
+                                </h2>
+                            </div>
+                            <nav aria-label="Main" className="flex flex-col justify-start items-start">
+                                {
+                                    ['mods'].map(item => {
                                         return (
                                             item === selectedPage ?
                                                 <SelectedItem key={item} value={item} />
@@ -149,7 +172,10 @@ export default function InstallerPage() {
                                     selectedPage === 'server' ?
                                         <ServerPage />
                                         :
-                                        <></>
+                                        selectedPage === 'mods' ?
+                                            <ModsPage />
+                                            :
+                                            null
                         }
                     </Context.Provider>
 

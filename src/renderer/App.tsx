@@ -3,6 +3,7 @@ import Page from './pages/page';
 import { createTheme, Theme, ThemeProvider } from '@mui/material';
 import { ModalProvider } from './hoc/modal';
 import { ToastProvider } from './hoc/toast';
+import { ConfigService } from './api';
 
 export const ThemeContext = createContext({
     theme: null,
@@ -24,7 +25,7 @@ export default function App(): React.JSX.Element {
     }, [theme]);
 
     const fetch = async () => {
-        const theme = await window.config.get('appearance.theme');
+        const theme = await ConfigService.get<'light' | 'dark'>('appearance.theme');
         if (theme) {
             setTheme(
                 createTheme({

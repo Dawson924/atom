@@ -1,6 +1,7 @@
 import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../App';
-import { Card, Container, Form, FormInput, FormSelect } from '../../components/commons';
+import { Card, Container, Form, FormInput, FormSelect } from '@renderer/components/commons';
+import { ConfigService } from '@renderer/api';
 
 export default function AppearancePage() {
     const { setThemeMode, fetch } = useContext(ThemeContext);
@@ -11,9 +12,9 @@ export default function AppearancePage() {
     const [theme, setTheme] = useState<string>();
 
     useEffect(() => {
-        window.config.get('appearance.theme').then(setTheme);
-        window.config.get('appearance.windowTitle').then(setWindowTitle);
-        window.config.get('appearance.windowSize').then(setWindowSize);
+        ConfigService.get('appearance.theme').then(setTheme);
+        ConfigService.get('appearance.windowTitle').then(setWindowTitle);
+        ConfigService.get('appearance.windowSize').then(setWindowSize);
     }, []);
 
     useEffect(() => {
@@ -24,12 +25,12 @@ export default function AppearancePage() {
             else return 'customized';
         };
         setWindowSizeMode(determineMode(windowSize));
-        window.config.set('appearance.windowSize', windowSize);
+        ConfigService.set('appearance.windowSize', windowSize);
     }, [windowSize]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        window.config.set(`appearance.${e.target.name}`, value);
+        ConfigService.set(`appearance.${e.target.name}`, value);
     };
 
     const changeWindowSizeMode = (value: string) => {
@@ -49,13 +50,16 @@ export default function AppearancePage() {
 
     return (
         <Container>
-            <Card title="appearance">
+            <Card
+                title="appearance"
+                className="mb-6"
+            >
                 <Form>
                     <FormSelect
                         title="Theme"
                         value={theme}
                         onChange={(e) => {
-                            window.config.set('appearance.theme', e.target.value);
+                            ConfigService.set('appearance.theme', e.target.value);
                             setTheme(e.target.value);
                             setThemeMode(e.target.value);
                             fetch();
@@ -92,7 +96,7 @@ export default function AppearancePage() {
                                     defaultValue={windowSize?.width || ''}
                                     onChange={(e) => setWindowSize(pre => ({ ...pre, width: parseInt(e.target.value) }))}
                                 />
-                                <h3>x</h3>
+                                <h3 className="text-black dark:text-gray-100">x</h3>
                                 <input
                                     className="w-1/3 h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
                                     defaultValue={windowSize?.height || ''}

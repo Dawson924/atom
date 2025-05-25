@@ -1,12 +1,12 @@
 import { Button, NativeSelect, TextField } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import * as skinview3d from 'skinview3d';
-import type { AccountSession } from '../../../types/auth';
-import { Card, Container, Form, FormInput } from '../../components/commons';
-import { getSkinData, setTexture } from '../../../utils/auth/skin.browser';
-import { SelectPromptModal, useModal } from '../../hoc/modal';
-import { requestSession } from '../../../utils/auth/session.mjs';
-import { useToast } from '../../hoc/toast';
+import type { AccountProfile, AccountSession } from '@common/types/auth';
+import { Card, Container, Form, FormInput, FormSelect } from '@renderer/components/commons';
+import { getSkinData } from '../../utils/auth/skin';
+import { InputModal, SelectPromptModal, useModal } from '@renderer/hoc/modal';
+import { useToast } from '@renderer/hoc/toast';
+import { ConfigService, UserService } from '@renderer/api';
 
 const ANIM_SETS = [
     skinview3d.IdleAnimation,
@@ -21,26 +21,31 @@ const ANIM_SETS = [
 export default function AccountPage() {
     const { openModal } = useModal();
     const { addToast } = useToast();
+    // Authenticate
     const [session, setSession] = useState<AccountSession>();
     const [skinUrl, setSkinUrl] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [server, setServer] = useState<string>();
-    const [jar, setJar] = useState<string>();
+    // Account
+    const [authOptions, setAuthOptions] = useState<Tentative>();
+    const [offlineProfiles, setOfflineProfiles] = useState<AccountProfile[]>();
+    const [selectedProfile, setSelectedProfile] = useState<string>();
+    // Skin Viewer 3D
     const [animationSelect, setAnimationSelect] = useState<number>(0);
     const [animationSpeed, setAnimationSpeed] = useState<number>(1);
     const [autoRotate, setAutoRotate] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetch = async () => {
-        await requestSession().then(setSession);
+        await UserService.session().then(setSession);
         await window.cache.get('account').then(account => {
             if (!account) return;
             setUsername(account.username);
             setPassword(account.password);
         });
-        await window.config.get('authentication.yggdrasilAgent.server').then(setServer);
-        await window.config.get('authentication.yggdrasilAgent.jar').then(setJar);
+        ConfigService.get('authentication').then(setAuthOptions);
+        UserService.getProfiles().then(setOfflineProfiles);
+        UserService.getSelectedProfile().then(setSelectedProfile);
     };
 
     useEffect(() => {
@@ -96,30 +101,38 @@ export default function AccountPage() {
         return () => {
             viewer?.dispose();
         };
-    }, [skinUrl, session, animationSelect, animationSpeed, autoRotate]);
+    }, [skinUrl, session, animationSelect, animationSpeed, autoRotate, authOptions]);
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        fetch();
+        ConfigService.set(e.target.name, e.target.value);
+    };
 
     const handleLogin = async () => {
         window.cache.set('account', { username, password });
-        window.auth.login({ username, password })
+        UserService.login({ username, password })
             .then(() => {
-                requestSession().then(setSession);
-                addToast('signed in successfully');
-            }).catch(_ => {
-                addToast(_.message, 'error');
+                UserService.session().then(setSession);
+                addToast('Signed in successfully');
+            }).catch(err => {
+                addToast(err.message, 'error');
             });
     };
 
     const handleLogout = async () => {
-        await window.auth.invalidate();
-        requestSession().then(setSession);
-        addToast('signed out successfully');
+        await UserService.invalidate();
+        UserService.session().then(setSession);
+        addToast('Signed out successfully');
     };
 
-    if (!session) return null;
+    if (!session || !authOptions) return null;
 
     return (
         <Container>
-            <Card title={session.signedIn ? `Hello, ${session.profile.name}` : 'Sign In'}>
+            {authOptions.mode === 'yggdrasil' && <Card
+                title={session.signedIn ? `Hello, ${session.profile.name}` : 'Sign In'}
+                className="mb-6"
+            >
                 {/* Sign-in Form */}
                 <div style={{ display: session.signedIn ? 'none' : 'flex' }} className="flex-col px-5">
                     <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
@@ -167,21 +180,23 @@ export default function AccountPage() {
                         </div>
                     </div>
                 </div>
-                <hr style={{ display: session.signedIn ? 'block' : 'none' }} className="h-px my-6 bg-neutral-200 border-0 dark:bg-neutral-700"></hr>
+                <hr style={{ display: session.signedIn ? 'block' : 'none' }} className="h-px my-3 bg-neutral-200 border-0 dark:bg-neutral-700"></hr>
                 <div
                     style={{ display: session.signedIn ? 'flex' : 'none' }}
                     className="mb-3 w-full flex-row justify-between items-end"
                 >
-                    {/* Viewer Dashboard */}
-                    <div className="w-full max-w-[420px]">
+                    {/* Left Area */}
+                    <div className="w-full max-w-3xl">
+                        {/* Viewer Panel */}
                         <div className="px-7 mt-3 space-y-5 flex flex-col">
+                            {/* Animation select */}
                             <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                 <div>
                                     <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Animation</h4>
                                 </div>
                                 <div className="w-full">
                                     <NativeSelect
-                                        className="h-6"
+                                        className="h-6 w-full"
                                         defaultValue={animationSelect}
                                         onChange={(e) => setAnimationSelect(parseInt(e.target.value))}
                                     >
@@ -195,6 +210,7 @@ export default function AccountPage() {
                                     </NativeSelect>
                                 </div>
                             </div>
+                            {/* Animation speed */}
                             <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                 <div>
                                     <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Speed</h4>
@@ -202,12 +218,14 @@ export default function AccountPage() {
                                 <div className="w-full">
                                     <TextField
                                         id="outlined-size-small"
+                                        className="w-full"
                                         size="small"
                                         defaultValue={animationSpeed}
                                         onChange={(e) => setAnimationSpeed(pre => parseInt(e.target.value) || pre)}
                                     />
                                 </div>
                             </div>
+                            {/* Auto rotation */}
                             <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                 <div>
                                     <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Auto Rotation</h4>
@@ -232,7 +250,7 @@ export default function AccountPage() {
                             </div>
                         </div>
                         {/* Skin Upload */}
-                        <div className="px-6 mt-2 max-w-lg flex items-center justify-center">
+                        <div className="px-6 mt-6 flex items-center justify-center">
                             <label
                                 htmlFor="dropzone-file"
                                 className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer transition-colors bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 hover:bg-gray-100 dark:border-neutral-600 dark:hover:border-gray-500"
@@ -286,7 +304,7 @@ export default function AccountPage() {
                                             const callback = async (model: 'slim' | 'steve') => {
                                                 try {
                                                     // 1. 确保先完成皮肤上传
-                                                    await setTexture({
+                                                    await UserService.setTexture({
                                                         accessToken: session.account.accessToken,
                                                         uuid: session.profile.id,
                                                         type: 'skin',
@@ -300,7 +318,7 @@ export default function AccountPage() {
 
                                                     // 2. 获取最新 session 数据（带重试机制）
                                                     const fetchWithRetry = async (attempt = 0): Promise<string | undefined> => {
-                                                        const newSession = await requestSession();
+                                                        const newSession = await UserService.session();
                                                         const newSkinData = await getSkinData(newSession.profile.id);
 
                                                         // 验证皮肤是否更新成功
@@ -322,7 +340,7 @@ export default function AccountPage() {
                                                         setSkinUrl(verifiedSkinUrl);
 
                                                 } catch (error) {
-                                                    addToast('failed to upload skin texture', 'error');
+                                                    addToast(error.message, 'error');
                                                 }
                                             };
                                             openModal(SelectPromptModal, {
@@ -412,19 +430,85 @@ export default function AccountPage() {
                         </Button>
                     </div>
                 }
-            </Card>
-            <Card title="Yggdrasil Agent">
+            </Card>}
+            {authOptions.mode === 'yggdrasil' &&
+                <Card
+                    title="Yggdrasil Agent"
+                    className="mb-6"
+                >
+                    <Form>
+                        <FormInput
+                            title="Server"
+                            name="authentication.yggdrasilAgent.server"
+                            value={authOptions.yggdrasilAgent.server}
+                            onChange={handleChange}
+                        />
+                        <FormInput
+                            title="Agent"
+                            name="authentication.yggdrasilAgent.jar"
+                            value={authOptions.yggdrasilAgent.jar}
+                            onChange={handleChange}
+                        />
+                    </Form>
+                </Card>}
+            <Card
+                title="Account"
+            >
                 <Form>
-                    <FormInput
-                        title="Server"
-                        value={server}
-                        onChange={(e) => window.config.set('authentication.yggdrasilAgent.server', e.target.value)}
+                    <FormSelect
+                        title="Mode"
+                        name="authentication.mode"
+                        value={authOptions.mode}
+                        onChange={handleChange}
+                        options={[
+                            { label: 'Offline', value: 'offline' },
+                            { label: 'Yggdrasil', value: 'yggdrasil' },
+                        ]}
                     />
-                    <FormInput
-                        title="Authlib-Injector"
-                        value={jar}
-                        onChange={(e) => window.config.set('authentication.yggdrasilAgent.jar', e.target.value)}
-                    />
+                    {authOptions.mode === 'offline' && offlineProfiles &&
+                        <>
+                            <FormSelect
+                                title="Profiles"
+                                value={offlineProfiles.find(i => i.id === selectedProfile)?.name}
+                                onChange={(e) =>
+                                    UserService
+                                        .setSelectedProfile(
+                                            offlineProfiles.find(i => i.name === e.target.value).id
+                                        )
+                                }
+                                options={offlineProfiles.map(item => {
+                                    return { label: item.name, value: item.name };
+                                })}
+                            />
+                            <div className="px-2 my-2 w-full flex justify-end">
+                                <Button
+                                    type="button"
+                                    className="w-fit"
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                        openModal(InputModal, {
+                                            title: 'New Profile',
+                                            name: 'Username',
+                                            onConfirm: (value: string) => {
+                                                if (!value) return;
+                                                UserService.addProfile(value)
+                                                    .then(() => {
+                                                        fetch();
+                                                        addToast(`New profile - ${value}`);
+                                                    })
+                                                    .catch(() => {
+                                                        addToast('Profile already exists', 'error');
+                                                    });
+                                            }
+                                        });
+                                    }}
+                                >
+                                    New Profile
+                                </Button>
+                            </div>
+                        </>
+                    }
                 </Form>
             </Card>
         </Container>

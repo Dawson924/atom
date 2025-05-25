@@ -24,7 +24,7 @@ export default function SettingsPage({ page }: {
             <div className="flex flex-row">
 
                 <div className="z-10 w-40 h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
-                    <div className="w-full h-full shadow-md">
+                    <div className="w-full h-full">
                         <nav aria-label="Main" className="flex flex-col h-full">
                             {/* Links */}
                             <div className="text-sm font-semibold overflow-hidden hover:overflow-auto">

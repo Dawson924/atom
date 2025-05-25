@@ -1,7 +1,7 @@
 {
   "name": "atom",
   "productName": "AtomLauncher",
-  "version": "0.1.4",
+  "version": "0.2.0-alpha.1",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -45,17 +45,16 @@
     "@xmcl/task": "^4.1.1",
     "autoprefixer": "^10.4.21",
     "axios": "^1.9.0",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "electron": "36.2.0",
     "electron-store": "^10.0.1",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
+    "framer-motion": "^12.12.2",
     "fs-extra": "^11.3.0",
     "headview3d": "^3.0.2",
-    "jimp": "^1.6.0",
     "postcss": "^8.5.3",
-    "sass": "^1.87.0",
-    "sass-embedded": "^1.87.0",
     "skinview3d": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
@@ -66,13 +65,14 @@
   "dependencies": {
     "@xmcl/core": "^2.14.1",
     "@xmcl/installer": "^6.1.0",
+    "@xmcl/modrinth": "^2.4.0",
     "@xmcl/system": "^2.2.8",
     "@xmcl/user": "^4.2.0",
     "electron-squirrel-startup": "^1.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router": "^7.6.0",
     "tailwindcss": "4.0.9",
+    "undici": "^7.10.0",
     "uuid": "^11.1.0"
   }
 }

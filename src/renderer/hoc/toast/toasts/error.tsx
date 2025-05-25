@@ -57,7 +57,7 @@ export function ErrorToast({
                 </svg>
                 <span className="sr-only">Error icon</span>
             </div>
-            <div className="mx-3 text-sm font-normal overflow-hidden whitespace-nowrap text-ellipsis">{message}</div>
+            <div className="ms-3 me-5 text-sm font-normal">{message}</div>
             <button
                 type="button"
                 className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg p-1.5 hover:bg-neutral-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-neutral-800 dark:hover:bg-neutral-700"

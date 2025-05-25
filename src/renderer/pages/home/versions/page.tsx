@@ -3,9 +3,10 @@ import FabricIcon from '../../../assets/images/minecraft/fabric.png';
 
 import { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import { useEffect, useState } from 'react';
-import { truncateWithEllipsis } from '../../../../utils/string';
+import { truncateWithEllipsis } from '../../../../common/utils/string';
 import { useNavigate } from '../../../router';
-import { Card, Container, Form } from '../../../components/commons';
+import { Card, Container, Form } from '@renderer/components/commons';
+import { ClientService, ConfigService } from '@renderer/api';
 
 export default function VersionsPage() {
     const navigate = useNavigate();
@@ -14,8 +15,8 @@ export default function VersionsPage() {
     const [versions, setLocalVersions] = useState<ResolvedVersion[]>();
 
     useEffect(() => {
-        window.client.folder().then(res => setFolder(res));
-        window.client.getVersions().then(res => setLocalVersions(res || []));
+        ClientService.getFolder().then(res => setFolder(res));
+        ClientService.getVersions().then(res => setLocalVersions(res || []));
     }, []);
 
     if (!folder || !versions) return null;
@@ -25,7 +26,7 @@ export default function VersionsPage() {
             <div className="flex flex-row">
 
                 <div className="z-10 w-[250px] h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
-                    <div className="w-full h-full shadow-md">
+                    <div className="w-full h-full">
                         <div className="px-5 pt-3 mb-1">
                             <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-gray-400">
                                 Folders
@@ -49,7 +50,11 @@ export default function VersionsPage() {
                 </div>
 
                 <Container>
-                    {versions.some(ver => ver.mainClass==='net.minecraft.client.main.Main') && <Card title="Minecraft">
+                    {versions.some(ver => ver.mainClass==='net.minecraft.client.main.Main') &&
+                    <Card
+                        title="Minecraft"
+                        className="mb-6"
+                    >
                         <Form>
                             {
                                 versions?.map((version: ResolvedVersion) => {
@@ -59,7 +64,7 @@ export default function VersionsPage() {
                                                 key={version.id}
                                                 className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
                                                 onClick={() => {
-                                                    window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
+                                                    ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
                                                 }}
                                             >
                                                 <div className="w-8 h-8 flex-shrink-0">
@@ -78,7 +83,11 @@ export default function VersionsPage() {
                             }
                         </Form>
                     </Card>}
-                    {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') && <Card title="Fabric">
+                    {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') &&
+                    <Card
+                        title="Fabric"
+                        className="mb-6"
+                    >
                         <Form>
                             {
                                 versions?.map((version: ResolvedVersion) => {
@@ -88,7 +97,7 @@ export default function VersionsPage() {
                                                 key={version.id}
                                                 className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
                                                 onClick={() => {
-                                                    window.config.set('launch.launchVersion', version.id).then(() => navigate('home'));
+                                                    ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
                                                 }}
                                             >
                                                 <div className="w-8 h-8 flex-shrink-0">
