@@ -42,7 +42,7 @@ export function ErrorToast({
     return (
         <div
             id="toast-danger"
-            className={`z-50 flex items-center w-fit p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-neutral-800 ${isExiting ? 'animate-slide-out' : 'animate-slide-in'}`}
+            className={`z-50 flex items-center w-fit p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-neutral-800 ${isExiting ? 'animate-slide-out' : 'animate-slide-in'}`}
             role="alert"
         >
             <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">

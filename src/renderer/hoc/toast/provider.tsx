@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             {children}
             {toasts.length > 0 ? (
                 <div className="fixed left-1/2 -translate-x-1/2 top-3 w-fit">
-                    <div className="flex flex-col gap-4 justify-start items-center">
+                    <div className="flex flex-col space-y-4 justify-start items-center">
                         {toasts.map((toast) => {
                             if (toast.type === 'success')
                                 return (
