@@ -30,7 +30,7 @@
 
     // Quotes related
     "quotes": ["warn", "single", { "avoidEscape": true }],
-    "@typescript-eslint/quotes": ["error", "single", { "avoidEscape": true }],
+    "@typescript-eslint/quotes": ["warn", "single", { "avoidEscape": true }],
 
     // JSX
     "jsx-quotes": ["error", "prefer-double"]
