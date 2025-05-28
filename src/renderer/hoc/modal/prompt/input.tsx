@@ -62,7 +62,7 @@ function InputModal({
                                     <input
                                         type="text"
                                         id="name"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg outline-none focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        className="bg-neutral-50 border border-neutral-300 text-gray-900 text-sm rounded-lg outline-none focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         value={value}
                                         onChange={(e) => setValue(e.target.value)}
                                         required
@@ -71,7 +71,7 @@ function InputModal({
                             </div>
                             <div className="flex items-center space-x-4">
                                 <button
-                                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:bg-neutral-400"
+                                    className="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-600 hover:cursor-pointer disabled:cursor-default"
                                     onClick={handleConfirm}
                                     disabled={!value}
                                 >

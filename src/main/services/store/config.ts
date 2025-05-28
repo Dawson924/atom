@@ -15,7 +15,7 @@ const store = new Store<{
         mode: 'yggdrasil' | 'xbox' | 'offline',
         yggdrasilAgent: {
             jar: string,
-            server: string,
+            server?: string,
             prefetched?: string
         }
     },
@@ -45,7 +45,7 @@ const store = new Store<{
             mode: 'offline',
             yggdrasilAgent: {
                 jar: './authlib-injector.jar',
-                server: 'http://localhost:5400/yggdrasil'
+                server: null
             }
         },
         launch: {

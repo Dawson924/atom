@@ -5,8 +5,8 @@ import { data } from '../libs/response';
 type DialogProperties = ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[];
 
 export class ElectronAPIController extends IPCServiceController {
-    protected override namespace: string;
-    protected override ipc: IPCService;
+    protected override readonly namespace: string;
+    protected override readonly ipc: IPCService;
 
     protected override registerHandlers() {
         this.handle('open-dialog', async (_, properties: DialogProperties = ['openFile', 'openDirectory']) => {

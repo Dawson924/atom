@@ -1,54 +1,60 @@
-import { getOfflineUUID, SetTextureOption, YggdrasilError, YggdrasilThirdPartyClient } from '@xmcl/user';
+import { SetTextureOption, YggdrasilError, YggdrasilThirdPartyClient } from '@xmcl/user';
 import { CONFIG, PROFILES } from './store';
-import { deleteAccount, getCurrentAccount, getCurrentProfile, hasAccount, updateAccount } from '../utils/profile.util';
+import {
+    addProfile,
+    deleteAccount,
+    deleteProfile,
+    getCurrentProfile,
+    getProfile,
+    getProfiles,
+    getSelectedProfile,
+    getUserAccount,
+    getUserProfile,
+    hasAccount,
+    setSelectedProfile,
+    setSelectedUser,
+    updateAccount
+} from '../utils/profile.util';
 import { IpcMainEvent } from 'electron';
 import { data, error, ERROR_CODES } from '../libs/response';
 
-declare function getOfflineUUID(username: string): string;
-
 export class UserService {
+    private mode: string;
     private signedIn: boolean;
     private clientToken: string;
     private client: YggdrasilThirdPartyClient;
 
     async addProfile(_: IpcMainEvent, name: string) {
-        const profile = Object.values(PROFILES.get('profiles')).find(i => i.name === name);
-        if (!profile) {
-            const id = getOfflineUUID(name).replaceAll(/-/g, '');
-            PROFILES.set('profiles.' + id, {
-                id,
-                name
-            });
+        try {
+            addProfile(name);
             return data();
+        } catch (err) {
+            return error(ERROR_CODES.BAD_REQUEST, err.message);
         }
-        else {
-            return error(ERROR_CODES.INVALID_ARGUMENT, 'Profile already exists');
-        }
+    }
+
+    async getCurrentProfile() {
+        return data(getCurrentProfile());
     }
 
     async getProfile(_: IpcMainEvent, id: string) {
-        return data(Object.values(PROFILES.get('profiles')).find(i => i.id === id));
+        return data(getProfile(id));
     }
 
     async getProfiles() {
-        return data(Object.values(PROFILES.get('profiles')) || []);
+        return data(getProfiles());
     }
 
     async getSelectedProfile() {
-        return data(PROFILES.get('selectedProfile'));
+        return data(getSelectedProfile());
     }
 
     async setSelectedProfile(_: IpcMainEvent, id: string) {
-        return data(PROFILES.set('selectedProfile', id));
+        return data(setSelectedProfile(id));
     }
 
     async deleteProfile(_: IpcMainEvent, id: string) {
-        if (PROFILES.get('selectedProfile') === id)
-            PROFILES.set('selectedProfile', null);
-
-        const profiles = PROFILES.get('profiles');
-        delete profiles[id];
-        PROFILES.set('profiles', profiles);
+        deleteProfile(id);
         return data();
     }
 
@@ -64,9 +70,8 @@ export class UserService {
                 requestUser: true
             });
             await this.validateAccount();
-            updateAccount(result);
-            return data(result);
-        } catch(err) {
+            return data(updateAccount(result));
+        } catch (err) {
             if (err instanceof YggdrasilError) {
                 return error(ERROR_CODES.BAD_REQUEST, `${err.error}: ${err.errorMessage}`);
             }
@@ -83,23 +88,30 @@ export class UserService {
     }
 
     async session() {
+        this.mode = CONFIG.get('authentication').mode;
         this.signedIn = hasAccount() ? await this.validateAccount() : false;
         return data({
+            mode: this.mode,
             signedIn: this.signedIn,
             clientToken: this.clientToken,
-            account: this.signedIn ? getCurrentAccount() : null,
-            profile: this.signedIn ? getCurrentProfile() : null,
+            account: this.signedIn ? getUserAccount() : null,
+            profile: (this.signedIn && this.mode !== 'offline') ? getUserProfile() : getCurrentProfile() || null,
         });
     }
 
     async invalidate() {
         try {
-            await this.client.invalidate(getCurrentAccount().accessToken, this.clientToken);
+            await this.client.invalidate(getUserAccount().accessToken, this.clientToken);
             deleteAccount();
             return data();
         } catch (err) {
             return error(ERROR_CODES.BAD_REQUEST);
         }
+    }
+
+    async setUser(_: IpcMainEvent, user: { account?: string; profile?: string; }) {
+        setSelectedUser(user);
+        return data();
     }
 
     async setTexture(_: IpcMainEvent, option: SetTextureOption) {
@@ -132,12 +144,13 @@ export class UserService {
             if (!hasAccount()) {
                 ok(false);
             }
-            this.client.validate(getCurrentAccount().accessToken, this.clientToken)
+            const userAccount = getUserAccount();
+            this.client.validate(userAccount.accessToken, this.clientToken)
                 .then(valid => {
                     if (valid) ok(true);
                     else {
                         this.client.refresh({
-                            accessToken: getCurrentAccount().accessToken,
+                            accessToken: userAccount.accessToken,
                             clientToken: this.clientToken,
                             requestUser: true
                         }).then(result => {

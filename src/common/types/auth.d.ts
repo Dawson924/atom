@@ -10,7 +10,8 @@ type UserSelect = {
     account: string;
     profile: string;
 };
-type AccountSession = {
+type UserSession = {
+    mode: 'xbox' | 'yggdrasil' | 'offline';
     signedIn: boolean;
     clientToken: string;
     account?: AuthenticatedAccount;
@@ -21,5 +22,5 @@ export type {
     AccountProfile,
     AuthenticatedAccount,
     UserSelect,
-    AccountSession,
+    UserSession,
 };

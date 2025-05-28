@@ -1,8 +1,8 @@
 import { IPCServiceController, IPCService } from '../core';
 
 export class AppServiceController extends IPCServiceController {
-    protected override namespace = 'app';
-    protected override ipc;
+    protected override readonly namespace = 'app';
+    protected override readonly ipc;
     protected app: Electron.App;
 
     protected override registerHandlers() {

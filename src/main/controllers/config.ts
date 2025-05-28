@@ -3,8 +3,8 @@ import { IPCServiceController, IPCService } from '../core';
 import { CONFIG } from '../services/store';
 
 export class ConfigServiceController extends IPCServiceController {
-    protected override namespace = 'config';
-    protected override ipc;
+    protected override readonly namespace = 'config';
+    protected override readonly ipc;
 
     protected override async registerHandlers() {
         this.handle('get', (_, key: string) => data(CONFIG.get(key)));

@@ -1,9 +1,8 @@
 import { app, BrowserWindow } from 'electron';
 import isReady from 'electron-squirrel-startup';
 import { IPCServiceController, IPCService } from './core';
-import { AppServiceController, AuthServiceController, CacheServiceController, ClientServiceController, ConfigServiceController, UtilityController } from './controllers';
+import { AppServiceController, UserServiceController, CacheServiceController, ClientServiceController, ConfigServiceController, UtilityController } from './controllers';
 import path from 'node:path';
-import { setupMinecraftDirectory } from './utils/folder';
 import { CONFIG } from './services/store';
 import { DefaultWindowOptions } from './libs/window';
 
@@ -66,10 +65,9 @@ const createWindow = (): void => {
 };
 
 const initializeServices = (ipc: IPCService) => {
-    setupMinecraftDirectory(CONFIG.get('launch.minecraftFolder'));
     controllers.push(
         new AppServiceController(ipc, app),
-        new AuthServiceController(ipc),
+        new UserServiceController(ipc),
         new CacheServiceController(ipc),
         new ClientServiceController(ipc),
         new ConfigServiceController(ipc),

@@ -1,7 +1,15 @@
-import { ModrinthV2Client, Project, ProjectVersion, SearchResultHit } from '@xmcl/modrinth';
+import NeoForgeIcon from '../../assets/images/minecraft/neoforge.png';
+import FabricIcon from '../../assets/images/minecraft/fabric.png';
+import ForgeIcon from '../../assets/images/minecraft/forge.png';
+import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion, SearchResultHit } from '@xmcl/modrinth';
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { Card, Container, Form } from '@renderer/components/commons';
 import { toUTCStringPretty } from '@common/utils/date';
+import { useClient } from '@renderer/hooks';
+import { SelectPromptModal, useModal } from '@renderer/hoc/modal';
+import { getVersionLoader } from '@renderer/utils/version';
+import { ClientService } from '@renderer/api';
+import { useToast } from '@renderer/hoc/toast';
 
 type ModSearchFormData = {
     name: string;
@@ -11,6 +19,10 @@ type ModSearchFormData = {
 const client = new ModrinthV2Client();
 
 export default function ModsPage() {
+    const { versions } = useClient();
+    const { openModal } = useModal();
+    const { addToast } = useToast();
+
     const [formData, setFormData] = useState<ModSearchFormData>({
         name: '',
         index: 'relevance'
@@ -74,6 +86,13 @@ export default function ModsPage() {
         }).then(res => {
             setResultHits(res.hits);
         });
+    };
+
+    const installMod = (id: string, file: ModVersionFile) => {
+        ClientService.installMod(id, file)
+            .then(() => {
+                addToast(`Installed ${file.filename} for ${id} successfully`);
+            });
     };
 
     return (
@@ -217,6 +236,7 @@ export default function ModsPage() {
                             {
                                 modProject.game_versions.toReversed().map(version => {
                                     return (
+                                        // Accordion
                                         <div
                                             key={version}
                                             style={{ paddingBottom: expandedVersion === version && '1rem' }}
@@ -260,6 +280,7 @@ export default function ModsPage() {
                                                     }}
                                                     className="overflow-hidden transition-all duration-400 ease-in-out"
                                                 >
+                                                    {/* ModFile List */}
                                                     <div
                                                         ref={fileContentRef}
                                                         className="flex flex-col px-2"
@@ -267,23 +288,62 @@ export default function ModsPage() {
                                                         {
                                                             projectVersions.map(projectVersion => {
                                                                 if (projectVersion.game_versions.includes(version))
-                                                                    return (
-                                                                        <div
-                                                                            key={projectVersion.id}
-                                                                            className="w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-100 dark:hover:bg-neutral-700 transition-all"
-                                                                        >
-                                                                            <div className="ml-3 w-8 h-8 flex-shrink-0">
-                                                                                <img
-                                                                                    src={modProject.icon_url}
-                                                                                    className="w-full h-full rounded-md"
-                                                                                />
+                                                                    return projectVersion.files.map(file => {
+                                                                        return (
+                                                                            <div
+                                                                                key={file.filename}
+                                                                                className="w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-100 dark:hover:bg-neutral-700 transition-all"
+                                                                                onClick={() => {
+                                                                                    openModal(SelectPromptModal, {
+                                                                                        title: `${projectVersion.version_type}-${projectVersion.version_number}`,
+                                                                                        items: versions.map(version => {
+                                                                                            if (!projectVersion.game_versions.includes(version.minecraftVersion)) {
+                                                                                                return;
+                                                                                            }
+                                                                                            else if (!projectVersion.loaders.includes(getVersionLoader(version))) {
+                                                                                                return;
+                                                                                            }
+                                                                                            return {
+                                                                                                label: version.id,
+                                                                                                icon: (
+                                                                                                    <img
+                                                                                                        src={
+                                                                                                            getVersionLoader(version) === 'neoforge' ? (
+                                                                                                                NeoForgeIcon
+                                                                                                            ) : getVersionLoader(version) === 'fabric' ? (
+                                                                                                                FabricIcon
+                                                                                                            ) : null
+                                                                                                        }
+                                                                                                        className="size-5"
+                                                                                                    />
+                                                                                                ),
+                                                                                                onSelect: () => installMod(version.id, file)
+                                                                                            };
+                                                                                        }).filter(Boolean)
+                                                                                    });
+                                                                                }}
+                                                                            >
+                                                                                <div className="ml-3 w-8 h-8 flex-shrink-0">
+                                                                                    <img
+                                                                                        src={
+                                                                                            projectVersion.loaders.includes('neoforge') ? (
+                                                                                                NeoForgeIcon
+                                                                                            ) : projectVersion.loaders.includes('fabric') ? (
+                                                                                                FabricIcon
+                                                                                            ) : projectVersion.loaders.includes('forge') ? (
+                                                                                                ForgeIcon
+                                                                                            ) : null
+                                                                                        }
+                                                                                        className="w-full h-full rounded-md"
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="w-full h-full flex flex-col items-start justify-center">
+                                                                                    <p className="text-sm text-gray-700 dark:text-gray-50">{projectVersion.name}</p>
+                                                                                    <p className="text-xs text-gray-400">{file.filename}</p>
+                                                                                </div>
                                                                             </div>
-                                                                            <div className="w-full h-full flex flex-col items-start justify-center">
-                                                                                <p className="text-sm text-gray-700 dark:text-gray-50">{projectVersion.name}</p>
-                                                                                <p className="text-xs text-gray-400">{toUTCStringPretty(projectVersion.date_published)}</p>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
+                                                                        );
+                                                                    });
                                                             })
                                                         }
                                                     </div>

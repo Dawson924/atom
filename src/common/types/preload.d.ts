@@ -1,7 +1,7 @@
 import type { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import type { FabricArtifactVersion, MinecraftVersionList } from '@xmcl/installer';
 import type { GameProfileWithProperties, SetTextureOption } from '@xmcl/user';
-import type { AccountSession } from './auth';
+import type { UserSession } from './auth';
 import type { IPCResponse } from '../libs/response';
 
 export interface ContextWindow {
@@ -24,7 +24,7 @@ export interface ContextWindow {
             password: string;
         }) => Promise<void>,
         lookup: (uuid: string) => Promise<GameProfileWithProperties>,
-        session: () => Promise<AccountSession>,
+        session: () => Promise<UserSession>,
         invalidate: () => Promise<void>,
         setTexture: (option: SetTextureOption) => Promise<void>,
     },

@@ -16,6 +16,7 @@ export class ClientServiceController extends IPCServiceController {
         this.handle('find-java', clientService.findJava.bind(clientService));
         this.handle('install', clientService.install.bind(clientService));
         this.handle('install-fabric', clientService.installFabric.bind(clientService));
+        this.handle('install-mod', clientService.installMod.bind(clientService));
         this.handle('launch', clientService.launch.bind(clientService));
     }
 

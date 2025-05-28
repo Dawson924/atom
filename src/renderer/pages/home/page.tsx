@@ -1,35 +1,38 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '../../router';
 import * as headview3d from 'headview3d';
-import type { AccountSession } from '@common/types/auth';
 import { getSkinData } from '../../utils/auth/skin';
 import { ClientService, ConfigService, UserService } from '@renderer/api';
 import { useToast } from '@renderer/hoc/toast';
+import { useSession } from '@renderer/hooks';
 
 export default function HomePage() {
     const navigate = useNavigate();
     const { addToast } = useToast();
+    const { session, refreshSession } = useSession();
 
     const [versionName, setVersionName] = useState<string | undefined>();
-    const [session, setSession] = useState<AccountSession>();
-    const [launchMode, setLaunchMode] = useState<string>('offline');
     const [skinUrl, setSkinUrl] = useState<string>('');
-    const [offlineName, setOfflineName] = useState<string>();
+
+    const fetchData = async () => {
+        try {
+            const [versionName] = await Promise.all([
+                ConfigService.get('launch.launchVersion'),
+            ]);
+            setVersionName(versionName);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
-        ConfigService.get('launch.launchVersion').then(setVersionName);
-        ConfigService.get('authentication.mode').then(setLaunchMode);
-        UserService.getSelectedProfile()
-            .then(UserService.getProfile)
-            .then(i => i.name)
-            .then(setOfflineName);
-        UserService.session().then(setSession);
+        fetchData();
     }, []);
 
     useEffect(() => {
         let isMounted = true;
 
-        if (session && session.signedIn) {
+        if (session?.signedIn && session.mode !== 'offline') {
             getSkinData(session.profile.id)
                 .then(skinData => {
                     if (!isMounted) return;
@@ -44,9 +47,9 @@ export default function HomePage() {
     }, [session]);
 
     useEffect(() => {
-        if (!session || (!session.signedIn && launchMode === 'yggdrasil')) return;
+        if (!session || (!session.signedIn && session.mode === 'yggdrasil')) return;
 
-        const shouldUseDefaultSkin = !(session.signedIn && launchMode === 'yggdrasil');
+        const shouldUseDefaultSkin = !(session.signedIn && session.mode === 'yggdrasil');
         const finalSkinUrl = shouldUseDefaultSkin
             ? 'http://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb'
             : skinUrl;
@@ -76,12 +79,24 @@ export default function HomePage() {
         return () => {
             viewer?.dispose();
         };
-    }, [skinUrl, session, launchMode]);
+    }, [skinUrl, session]);
 
+    const changeLaunchMode = async (mode: string) => {
+        await ConfigService.set('authentication.mode', mode);
+        await refreshSession();
+    };
 
-    const changeLaunchMode = (mode: string) => {
-        setLaunchMode(mode);
-        ConfigService.set('authentication.mode', mode);
+    const createOfflineProfile = (e: Tentative) => {
+        if (e.key !== 'Enter')
+            return;
+
+        const name = (e.target as HTMLInputElement).value;
+        UserService.addProfile(name)
+            .then(() => {
+                addToast('New profile - ' + name);
+                UserService.setSelectedProfile(name).then(refreshSession);
+            })
+            .catch(() => addToast('Profile already exists', 'error'));
     };
 
     if (!session) return null;
@@ -98,13 +113,13 @@ export default function HomePage() {
                             <div className="inline-flex h-9 w-auto items-baseline justify-start rounded-lg bg-gray-100 dark:bg-neutral-900 p-1">
                                 <MenuItem
                                     value="Mojang"
-                                    selected={launchMode === 'yggdrasil'}
+                                    selected={session.mode === 'yggdrasil'}
                                     icon={<YggdrasilIcon />}
                                     onClick={() => changeLaunchMode('yggdrasil')}
                                 />
                                 <MenuItem
                                     value="Offline"
-                                    selected={launchMode === 'offline'}
+                                    selected={session.mode === 'offline'}
                                     icon={<GitHubIcon />}
                                     onClick={() => changeLaunchMode('offline')}
                                 />
@@ -112,7 +127,7 @@ export default function HomePage() {
                             {/* Character preview */}
                             <div className="mt-4 w-full h-full flex flex-col justify-center items-center">
                                 {
-                                    launchMode === 'yggdrasil' ? session.signedIn ?
+                                    session.mode !== 'offline' ? session.signedIn ?
                                         (<div className="w-full h-full flex flex-col justify-center items-center">
                                             <canvas id="skin-container"></canvas>
                                             <div>
@@ -131,19 +146,21 @@ export default function HomePage() {
                                             </div>
                                         </div>)
                                         :
-                                        offlineName ?
+                                        session.profile ?
                                             (<div className="w-full h-full flex flex-col justify-center items-center">
                                                 <canvas id="skin-container"></canvas>
-                                                <div>
-                                                    <h3 className="text-lg font-light text-gray-700 dark:text-gray-300">{offlineName}</h3>
+                                                <div onClick={() => navigate('settings?page=account')}>
+                                                    <h3 className="text-lg font-light text-gray-700 dark:text-gray-300">
+                                                        {session.profile.name}
+                                                    </h3>
                                                 </div>
                                             </div>)
                                             :
-                                            (<div className="w-full h-full flex flex-col justify-center items-center">
+                                            (<div className="w-11/12 h-full flex flex-col justify-center items-center">
                                                 <canvas id="skin-container"></canvas>
                                                 <input
-                                                    className="w-2/3 h-8 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
-                                                    defaultValue={'asd'}
+                                                    className="w-full h-8.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
+                                                    onKeyDown={createOfflineProfile}
                                                 />
                                             </div>)
                                 }
@@ -153,17 +170,17 @@ export default function HomePage() {
                         <div className="p-5 w-full h-40 space-y-4">
                             {/* Launch button */}
                             <button
-                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer disabled:cursor-not-allowed border rounded-lg border-blue-400 disabled:border-gray-100 hover:bg-blue-100 disabled:bg-neutral-100 dark:border-blue-500 dark:hover:bg-blue-500"
+                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer disabled:cursor-not-allowed border rounded-lg border-blue-400 disabled:border-none hover:bg-blue-100 disabled:bg-neutral-100 dark:border-blue-500 dark:hover:bg-blue-500 dark:disabled:bg-neutral-700"
                                 onClick={async () => {
                                     if (!versionName)
                                         return navigate('home/versions');
-                                    else if (launchMode !== 'offline' && !session.signedIn) {
+                                    else if (session.mode !== 'offline' && !session.signedIn) {
                                         return addToast('You haven\'t signed in', 'error');
                                     }
 
                                     ClientService.launch(versionName);
                                 }}
-                                disabled={launchMode !== 'offline' && !session.signedIn}
+                                disabled={session.mode !== 'offline' && !session.signedIn}
                             >
                                 <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">Launch</h3>
                                 <p className="text-xs font-[Inter] text-gray-400">{versionName ?? 'Choose a minecraft version'}</p>

@@ -1,21 +1,21 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Container } from '@renderer/components/commons';
 import { FabricArtifactVersion } from '@xmcl/installer';
 import MinecraftIcon from '../../assets/images/minecraft/grass_block.png';
 import FabricIcon from '../../assets/images/minecraft/fabric.png';
-import { Context } from './page';
 import { Fab } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import { useToast } from '@renderer/hoc/toast';
 import { ClientService } from '@renderer/api';
 import clsx from 'clsx';
+import { usePageStore } from '@renderer/hooks/store/page/install';
 
 export default function ClientInfoPage({ version }: {
     version: string;
 }) {
     if (!version) return null;
 
-    const { goTo, executeTask, taskState } = useContext(Context);
+    const { goTo, executeTask, taskState } = usePageStore(state => state);
     const { addToast } = useToast();
 
     const [versionName, setVersionName] = useState<string>(version);

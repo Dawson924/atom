@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { downloadJar } from './authlib-injector';
+import { DEFAULT_FILE_NAME, downloadJar } from './authlib-injector';
+import { MinecraftFolder } from '@xmcl/core';
 
 /**
  * 获取系统对应的.minecraft路径
@@ -51,7 +52,9 @@ async function setupMinecraftDirectory(dir?: string) {
         await ensureDirectory(path.join(minecraftPath, dir));
     }
 
-    await downloadJar(path.join(minecraftPath, 'authlib-injector.jar'));
+    await downloadJar(path.join(minecraftPath, DEFAULT_FILE_NAME));
+
+    return MinecraftFolder.from(minecraftPath);
 }
 
 export { setupMinecraftDirectory, getDefaultPath };

@@ -37,7 +37,8 @@ const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>>
 
 const FormSelect: React.FC<FormItemProps & {
     options: { value: string, label: string }[];
-} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, options }) => {
+    placeholder?: string;
+} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, placeholder, options }) => {
     return (
         <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div className="w-32 shrink-0">
@@ -51,6 +52,7 @@ const FormSelect: React.FC<FormItemProps & {
                         defaultValue={value}
                         onChange={onChange}
                     >
+                        { placeholder && <option value={null}>{placeholder}</option> }
                         {options.map((opt) => {
                             return <option key={opt.value} value={opt.value}>{opt.label}</option>;
                         })}

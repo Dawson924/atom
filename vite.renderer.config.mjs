@@ -11,5 +11,8 @@ export default defineConfig({
             '@renderer': '/src/renderer',
         }
     },
+    server: {
+        port: 7642
+    },
     plugins: [react(), tailwindcss()]
 });

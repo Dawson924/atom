@@ -1,10 +1,9 @@
 import { MinecraftFolder, MinecraftLocation, ResolvedVersion, Version } from '@xmcl/core';
 import { InstallJarTask, InstallJsonTask, MinecraftVersion, installDependenciesTask } from '@xmcl/installer';
-import { CONFIG, PROFILES } from '../services/store';
-import { getCurrentAccount, getCurrentProfile } from './profile.util';
+import { CONFIG } from '../services/store';
+import { getGameProfile, getUserAccount } from './profile.util';
 import { IpcMainEvent } from 'electron';
 import axios from 'axios';
-import { GameProfile } from '@xmcl/user';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolveJarLocation } from './authlib-injector';
 
@@ -44,7 +43,8 @@ export const createTaskHandler = (
 export const installVersionTask = async (
     folder: MinecraftFolder,
     version: MinecraftVersion,
-    handler: InstallTaskHandler
+    handler: InstallTaskHandler,
+    depsHandler: InstallTaskHandler,
 ) => {
     // 安装JSON
     await new InstallJsonTask(version, folder, {})
@@ -66,7 +66,7 @@ export const installVersionTask = async (
 
     // 安装依赖
     await installDependenciesTask(await Version.parse(folder, version.id))
-        .startAndWait(handler);
+        .startAndWait(depsHandler);
 };
 
 // 获取启动配置
@@ -95,7 +95,7 @@ export const getLaunchOptions = async (location: MinecraftLocation, version: str
         },
         authOptions: {
             userType: mode === 'offline' ? 'legacy' : 'mojang',
-            accessToken: getCurrentAccount().accessToken,
+            accessToken: getUserAccount().accessToken,
             yggdrasilAgent: mode === 'yggdrasil' ? {
                 jar: resolveJarLocation(authentication.yggdrasilAgent.jar),
                 server: authentication.yggdrasilAgent.server,
@@ -103,13 +103,6 @@ export const getLaunchOptions = async (location: MinecraftLocation, version: str
             } : undefined
         }
     };
-};
-
-// 获取游戏Profile
-export const getGameProfile = (mode: string): GameProfile => {
-    return mode === 'offline'
-        ? PROFILES.get('profiles.' + PROFILES.get('selectedProfile'))
-        : getCurrentProfile();
 };
 
 // 版本处理工具

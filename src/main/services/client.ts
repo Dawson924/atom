@@ -1,10 +1,14 @@
-import { launch, LaunchOption, MinecraftFolder, Version } from '@xmcl/core';
+import { launch, LaunchOption, MinecraftFolder, MinecraftPath, Version } from '@xmcl/core';
 import { getFabricLoaderArtifact, getFabricLoaders, getVersionList, installDependenciesTask, installFabricByLoaderArtifact, type FabricArtifactVersion, type MinecraftVersionList } from '@xmcl/installer';
 import { CONFIG } from './store';
 import { IpcMainEvent } from 'electron';
 import { createTaskHandler, getLaunchOptions, installVersionTask, VersionUtils } from '../utils/client.util';
 import { data, error, ERROR_CODES } from '../libs/response';
 import { findJava } from '../utils/java';
+import { ModVersionFile } from '@xmcl/modrinth';
+import { downloadFile } from '@main/utils/download.mjs';
+import path from 'node:path';
+import { setupMinecraftDirectory } from '@main/utils/folder';
 
 export class ClientService {
     private minecraftFolder: MinecraftFolder;
@@ -12,7 +16,8 @@ export class ClientService {
     private fabricArtifacts: FabricArtifactVersion[];
 
     async getFolder() {
-        return data(this.minecraftFolder);
+        const folder = await setupMinecraftDirectory(this.minecraftFolder.root);
+        return data(folder);
     }
 
     async findVersions() {
@@ -43,14 +48,17 @@ export class ClientService {
     }
 
     async install(event: IpcMainEvent, id: string, version: string) {
-        const handler = createTaskHandler(event, 'install', 'Install', id, version);
+        const handler = createTaskHandler(event, 'install', 'Downloading Minecraft', id, version);
+        const depsHandler = createTaskHandler(event, 'install', 'Installing Dependencies', id, version);
+
         const versionInfo = await this.resolveVersion(version);
         versionInfo.id = id;
 
         await installVersionTask(
             this.minecraftFolder,
             versionInfo,
-            handler
+            handler,
+            depsHandler
         );
 
         event.sender.send('on-complete');
@@ -59,14 +67,14 @@ export class ClientService {
     }
 
     async installFabric(event: IpcMainEvent, id: string, version: string, loaderVersion: string) {
-        const baseHandler = createTaskHandler(event, 'install', 'Downloading Minecraft', id, version);
-        const fabricHandler = createTaskHandler(event, 'install-fabric', 'Downloading Fabric-Loader', id, version);
+        const baseHandler = createTaskHandler(event, 'install', 'Downloading Fabric', id, version);
+        const depsHandler = createTaskHandler(event, 'install', 'Installing Dependencies', id, version);
 
         // 安装基础版本
         const inheritor = VersionUtils.createInheritVersionId(version);
         const mcInfo = await this.resolveVersion(version);
         mcInfo.id = inheritor;
-        await installVersionTask(this.minecraftFolder, mcInfo, baseHandler);
+        await installVersionTask(this.minecraftFolder, mcInfo, baseHandler, depsHandler);
 
         // 安装Fabric
         const fabricVersionName = await installFabricByLoaderArtifact(
@@ -77,10 +85,16 @@ export class ClientService {
 
         // 安装依赖
         await installDependenciesTask(await Version.parse(this.minecraftFolder, fabricVersionName))
-            .startAndWait(fabricHandler);
+            .startAndWait(depsHandler);
 
         event.sender.send('on-complete');
 
+        return data();
+    }
+
+    async installMod(_: IpcMainEvent, id: string, file: ModVersionFile) {
+        const modFilePath = path.join(this.minecraftFolder.getVersionRoot(id), MinecraftPath.mods, file.filename);
+        await downloadFile(file.url, modFilePath);
         return data();
     }
 
@@ -103,7 +117,7 @@ export class ClientService {
     }
 
     private async initialize() {
-        this.minecraftFolder = new MinecraftFolder(CONFIG.get('launch.minecraftFolder'));
+        this.minecraftFolder = await setupMinecraftDirectory(CONFIG.get('launch.minecraftFolder'));
         this.versionManifest = await getVersionList();
         this.fabricArtifacts = await getFabricLoaders();
     }
