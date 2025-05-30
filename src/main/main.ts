@@ -3,7 +3,7 @@ import isReady from 'electron-squirrel-startup';
 import { IPCServiceController, IPCService } from './core';
 import { AppServiceController, UserServiceController, CacheServiceController, ClientServiceController, ConfigServiceController, UtilityController } from './controllers';
 import path from 'node:path';
-import { CONFIG } from './services/store';
+import { CONFIG } from './store';
 import { DefaultWindowOptions } from './libs/window';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

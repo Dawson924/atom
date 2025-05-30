@@ -1,5 +1,5 @@
 import { SetTextureOption, YggdrasilError, YggdrasilThirdPartyClient } from '@xmcl/user';
-import { CONFIG, PROFILES } from './store';
+import { CONFIG, PROFILES } from '../store';
 import {
     addProfile,
     deleteAccount,

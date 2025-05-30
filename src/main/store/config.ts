@@ -1,6 +1,6 @@
 import { findStoreDir } from '@common/utils';
 import Store from 'electron-store';
-import { getDefaultPath } from '../../utils/folder';
+import { getDefaultPath } from '../utils/folder';
 
 const store = new Store<{
     appearance: {

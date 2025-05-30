@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { CONFIG } from '../services/store';
+import { CONFIG } from '../store';
 import fs from 'node:fs';
 import axios from 'axios';
 

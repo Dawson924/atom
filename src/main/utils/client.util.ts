@@ -1,6 +1,6 @@
 import { MinecraftFolder, MinecraftLocation, ResolvedVersion, Version } from '@xmcl/core';
 import { InstallJarTask, InstallJsonTask, MinecraftVersion, installDependenciesTask } from '@xmcl/installer';
-import { CONFIG } from '../services/store';
+import { CONFIG } from '../store';
 import { getGameProfile, getUserAccount } from './profile.util';
 import { IpcMainEvent } from 'electron';
 import axios from 'axios';

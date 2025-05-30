@@ -1,6 +1,6 @@
 import { launch, LaunchOption, MinecraftFolder, MinecraftPath, Version } from '@xmcl/core';
 import { getFabricLoaderArtifact, getFabricLoaders, getVersionList, installDependenciesTask, installFabricByLoaderArtifact, type FabricArtifactVersion, type MinecraftVersionList } from '@xmcl/installer';
-import { CONFIG } from './store';
+import { CONFIG } from '../store';
 import { IpcMainEvent } from 'electron';
 import { createTaskHandler, getLaunchOptions, installVersionTask, VersionUtils } from '../utils/client.util';
 import { data, error, ERROR_CODES } from '../libs/response';

@@ -1,6 +1,6 @@
 import { data } from '../libs/response';
 import { IPCServiceController, IPCService } from '../core';
-import { CONFIG } from '../services/store';
+import { CONFIG } from '../store';
 
 export class ConfigServiceController extends IPCServiceController {
     protected override readonly namespace = 'config';

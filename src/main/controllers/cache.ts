@@ -1,5 +1,5 @@
 import { IPCService, IPCServiceController } from '../core';
-import { CACHE } from '../services/store/cache';
+import { CACHE } from '../store/cache';
 
 export class CacheServiceController extends IPCServiceController {
     protected override readonly namespace = 'cache';

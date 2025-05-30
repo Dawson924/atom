@@ -1,6 +1,6 @@
 import { GameProfile, getOfflineUUID, YggdrasilError, YggrasilAuthentication } from '@xmcl/user';
 import type { AccountProfile, AuthenticatedAccount } from '@common/types/auth';
-import { PROFILES } from '../services/store';
+import { PROFILES } from '../store';
 import { Maybe } from '@common/types/utils';
 
 const addProfile = (name: string) => {
