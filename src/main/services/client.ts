@@ -8,6 +8,7 @@ import { findJava } from '../utils/java';
 import { ModVersionFile } from '@xmcl/modrinth';
 import { downloadFile } from '@main/utils/download.mjs';
 import path from 'node:path';
+import fs from 'fs';
 import { setupMinecraftDirectory } from '@main/utils/folder';
 
 export class ClientService {
@@ -93,7 +94,15 @@ export class ClientService {
     }
 
     async installMod(_: IpcMainEvent, id: string, file: ModVersionFile) {
-        const modFilePath = path.join(this.minecraftFolder.getVersionRoot(id), MinecraftPath.mods, file.filename);
+        const versionDir = this.minecraftFolder.getVersionRoot(id);
+        if (!fs.existsSync(versionDir))
+            return error(ERROR_CODES.NOT_FOUND, 'Cannot find version ' + id, id);
+
+        const modsDir = path.join(versionDir, MinecraftPath.mods);
+        if (!fs.existsSync(modsDir)) {
+            fs.mkdirSync(modsDir, { recursive: true });
+        }
+        const modFilePath = path.join(modsDir, file.filename);
         await downloadFile(file.url, modFilePath);
         return data();
     }
