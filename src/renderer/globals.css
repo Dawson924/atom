@@ -7,12 +7,12 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  html {
-    @apply bg-white dark:bg-neutral-900;
-  }
-  body {
-    @apply bg-white dark:bg-neutral-900;
-  }
+    html {
+        @apply bg-white dark:bg-neutral-900;
+    }
+    body {
+        @apply bg-white dark:bg-neutral-900;
+    }
 }
 
 @theme {
@@ -20,6 +20,8 @@
     --animate-slide-out: slide-out 0.25s ease-in forwards;
     --animate-fade-in: fade-in 0.25s ease-out forwards;
     --animate-fade-out: fade-out 0.25s ease-in forwards;
+    --animate-bounce-in: bounce-in 0.25s ease-in-out forwards;
+    --animate-slide-down: slide-down 0.2s ease-in forwards;
 
     @keyframes slide-in {
         0% {
@@ -53,60 +55,81 @@
             opacity: 0;
         }
     }
+    @keyframes bounce-in {
+        0% { transform: scale(0); opacity: 0 }
+        60% { transform: scale(1.005); opacity: 1 }
+        100% { transform: scale(1) }
+    }
+    @keyframes slide-down {
+        0% {
+            transform: translateY(-20px);
+            opacity: 0;
+            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        60% {
+            transform: translateY(5px);
+            opacity: 1;
+            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+            100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 }
 
 #root,
 body,
 html {
-  width: 100%;
-  height: 100vh;
+    width: 100%;
+    height: 100vh;
 }
 
 body {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 #window {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 #window .title-bar {
-  position: relative;
-  width: 100%;
+    position: relative;
+    width: 100%;
 }
 
 #window .title-bar .header {
-  position: relative;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  width: 100%;
-  height: 32px;
-  -webkit-app-region: drag;
+    position: relative;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    width: 100%;
+    height: 32px;
+    -webkit-app-region: drag;
 }
 
 #window .title-bar .header .header-left {
-  height: 32px;
+    height: 32px;
 }
 
 #window .title-bar .header .header-right {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
-  height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    height: 32px;
 }
 
 #window .title-bar .header .header-right .traffic-light {
-  height: 32px;
-  -webkit-app-region: no-drag;
+    height: 32px;
+    -webkit-app-region: no-drag;
 }
 
 .h-main {
-  height: calc(100vh - (32px + 48px));
+    height: calc(100vh - (32px + 48px));
 }
 
 /* 适用于Webkit浏览器(Chrome, Safari, Edge等) */

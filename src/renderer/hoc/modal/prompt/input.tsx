@@ -1,3 +1,4 @@
+import { Input } from '@renderer/components/commons';
 import { useState } from 'react';
 
 function InputModal({
@@ -59,10 +60,10 @@ function InputModal({
                                     >
                                         {name || 'Value'}
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
                                         id="name"
-                                        className="bg-neutral-50 border border-neutral-300 text-gray-900 text-sm rounded-lg outline-none focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        className="h-10!"
                                         value={value}
                                         onChange={(e) => setValue(e.target.value)}
                                         required

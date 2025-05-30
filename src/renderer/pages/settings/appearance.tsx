@@ -1,6 +1,6 @@
 import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../App';
-import { Card, Container, Form, FormInput, FormSelect } from '@renderer/components/commons';
+import { Card, Container, Form, FormInput, FormSelect, Input } from '@renderer/components/commons';
 import { ConfigService } from '@renderer/api';
 
 export default function AppearancePage() {
@@ -91,14 +91,14 @@ export default function AppearancePage() {
                         </div>
                         {windowSizeMode === 'customized' && <div className="md:col-span-2 max-md:hidden">
                             <div className="pr-2 w-full space-x-2 flex flex-row justify-end items-center">
-                                <input
-                                    className="w-1/3 h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
+                                <Input
+                                    className="w-1/3!"
                                     defaultValue={windowSize?.width || ''}
                                     onChange={(e) => setWindowSize(pre => ({ ...pre, width: parseInt(e.target.value) }))}
                                 />
                                 <h3 className="text-black dark:text-gray-100">x</h3>
-                                <input
-                                    className="w-1/3 h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
+                                <Input
+                                    className="w-1/3!"
                                     defaultValue={windowSize?.height || ''}
                                     onChange={(e) => setWindowSize(pre => ({ ...pre, height: parseInt(e.target.value) }))}
                                 />

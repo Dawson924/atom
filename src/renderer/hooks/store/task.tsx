@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { ClientService } from '@renderer/api';
-import { JSX } from 'react';
 
-// 定义下载任务类型
 type DownloadTask = {
     id: string;
     version: string;
@@ -21,31 +19,18 @@ type TaskState = {
     progress: number;
 };
 
-// 定义状态类型
-interface AppState {
-    // 导航状态
-    currentPage: string | JSX.Element | null;
-    goTo: (target: string | JSX.Element) => void;
-
-    // 任务状态
+interface TaskStore {
     currentTask: DownloadTask | null;
     taskState: TaskState | null;
     isProcessing: boolean;
     executeTask: (taskParams: DownloadTask) => Promise<void>;
 }
 
-// 创建 Store
-export const usePageStore = create<AppState>((set, get) => ({
-    // 导航状态初始化
-    currentPage: 'client',
-    goTo: (target) => set({ currentPage: target }),
-
-    // 任务状态初始化
+export const useTask = create<TaskStore>((set, get) => ({
     currentTask: null,
     taskState: null,
     isProcessing: false,
 
-    // 任务执行方法
     executeTask: async (taskParams) => {
         const { isProcessing } = get();
         if (isProcessing) {

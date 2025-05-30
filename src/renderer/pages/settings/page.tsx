@@ -1,21 +1,25 @@
-import { useState } from 'react';
 import StartupPage from './startup';
 import AppearancePage from './appearance';
 import AccountPage from './account';
+import { useEffect } from 'react';
+import { useSettingsPage } from '@renderer/hooks/store';
 
-export default function SettingsPage({ page }: {
-    page?: string;
-}) {
-    const [selectedPage, setSelectedPage] = useState<string>(page || 'account');
+export default function SettingsPage({ page }: { page?: string }) {
+    const { currentPage, goTo } = useSettingsPage();
+
+    useEffect(() => {
+        if (page)
+            goTo(page);
+    }, [page]);
 
     const MenuItem = ({ value, icon }: {
         value: string;
         icon: Tentative;
     }) => {
         return (
-            value === selectedPage ?
+            value === currentPage ?
                 <SelectedItem value={value} icon={icon} /> :
-                <UnselectedItem value={value} icon={icon} onClick={() => setSelectedPage(value)} />
+                <UnselectedItem value={value} icon={icon} onClick={() => goTo(value)} />
         );
     };
 
@@ -74,13 +78,13 @@ export default function SettingsPage({ page }: {
                 </div>
 
                 {
-                    selectedPage === 'account' ?
-                        <AccountPage /> :
-                        selectedPage === 'startup' ?
-                            <StartupPage /> :
-                            selectedPage === 'appearance' ?
-                                <AppearancePage /> :
-                                <></>
+                    currentPage === 'account' ? (
+                        <AccountPage />
+                    ) : currentPage === 'startup' ? (
+                        <StartupPage />
+                    ) : currentPage === 'appearance' ? (
+                        <AppearancePage />
+                    ) : null
                 }
 
             </div>

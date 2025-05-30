@@ -5,6 +5,7 @@ import { getSkinData } from '../../utils/auth/skin';
 import { ClientService, ConfigService, UserService } from '@renderer/api';
 import { useToast } from '@renderer/hoc/toast';
 import { useSession } from '@renderer/hooks';
+import { Input } from '@renderer/components/commons';
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -158,8 +159,8 @@ export default function HomePage() {
                                             :
                                             (<div className="w-11/12 h-full flex flex-col justify-center items-center">
                                                 <canvas id="skin-container"></canvas>
-                                                <input
-                                                    className="w-full h-8.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
+                                                <Input
+                                                    className="h-8.5!"
                                                     onKeyDown={createOfflineProfile}
                                                 />
                                             </div>)

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { AnchorHTMLAttributes, InputHTMLAttributes } from 'react';
+import { FormHTMLAttributes, InputHTMLAttributes } from 'react';
+import { Input } from './input';
 
 type FormItemProps = {
     title?: string;
@@ -7,7 +8,7 @@ type FormItemProps = {
     value: any;
 };
 
-const Form: React.FC<AnchorHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit }) => {
+const Form: React.FC<FormHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit }) => {
     return (
         <form onSubmit={onSubmit}>
             <div className="flex flex-col px-5">
@@ -24,9 +25,8 @@ const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>>
                 <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
             </div>
             <div className="w-full min-w-80">
-                <input
+                <Input
                     name={name}
-                    className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
                     defaultValue={value}
                     onChange={onChange}
                 />

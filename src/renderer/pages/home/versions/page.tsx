@@ -53,7 +53,7 @@ export default function VersionsPage() {
                     {versions.some(ver => ver.mainClass==='net.minecraft.client.main.Main') &&
                     <Card
                         title="Minecraft"
-                        className="mb-6"
+                        className="mb-6 animate-[slide-down_0.1s_ease-in]"
                     >
                         <Form>
                             {
@@ -62,7 +62,7 @@ export default function VersionsPage() {
                                         return (
                                             <div
                                                 key={version.id}
-                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
                                                 onClick={() => {
                                                     ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
                                                 }}
@@ -86,7 +86,7 @@ export default function VersionsPage() {
                     {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') &&
                     <Card
                         title="Fabric"
-                        className="mb-6"
+                        className="mb-6 animate-[slide-down_0.3s_ease-in]"
                     >
                         <Form>
                             {
@@ -95,7 +95,7 @@ export default function VersionsPage() {
                                         return (
                                             <div
                                                 key={version.id}
-                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all hover:scale-101"
+                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
                                                 onClick={() => {
                                                     ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
                                                 }}

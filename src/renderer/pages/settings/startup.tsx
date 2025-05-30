@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Card, Container, Form, FormInput } from '@renderer/components/commons';
+import { Card, Container, Form, FormInput, RangeSlider } from '@renderer/components/commons';
 import { convertUnitsPrecise } from '@common/utils/byte';
 import { ConfigService, SystemService } from '@renderer/api';
 
@@ -55,13 +55,8 @@ export default function StartupPage() {
     useEffect(() => {
         const interval = setInterval(async () => {
             try {
-                const [usage, total] = await Promise.all([
-                    SystemService.memoryUsage(),
-                    SystemService.totalMemory()
-                ]);
-
-                setMemoryUsage(convertByteToGB(usage));
-                setTotalMemory(convertByteToGB(total));
+                const memoryUsageGB = convertByteToGB(await SystemService.memoryUsage());
+                setMemoryUsage(memoryUsageGB);
             } catch (error) {
                 console.error('Failed to update memory usage:', error);
             }
@@ -127,9 +122,7 @@ export default function StartupPage() {
                                 </h3>
                             </div>
                             <div className="flex flex-row items-center w-full min-w-80">
-                                <input
-                                    type="range"
-                                    className="transparent h-1 w-full cursor-pointer appearance-none border-transparent bg-neutral-200 dark:bg-neutral-600"
+                                <RangeSlider
                                     min={0}
                                     max={totalMemory}
                                     step={0.1}
@@ -144,14 +137,23 @@ export default function StartupPage() {
                             <div className="flex flex-row items-center w-full min-w-80">
                                 {/* Memory used area */}
                                 <div
-                                    style={{ width: `${(memoryUsage / totalMemory) * 100}%` }}
+                                    style={{
+                                        width: `${(memoryUsage / totalMemory) * 100}%`,
+                                        minWidth: '10%'
+                                    }}
                                     className="relative h-1 shrink-0 transition-all duration-75 bg-blue-600"
                                 >
                                     <label className="absolute -top-6 text-xs text-nowrap text-gray-600 dark:text-gray-300">
                                         Memory Usage
                                     </label>
                                     <label className="absolute -bottom-6 text-sm text-nowrap text-gray-800 dark:text-gray-400">
-                                        {memoryUsage} GB / {totalMemory} GB
+                                        {
+                                            memoryUsage / totalMemory > .10 ? (
+                                                `${memoryUsage} GB / ${totalMemory} GB`
+                                            ) : (
+                                                `~ / ${totalMemory} GB`
+                                            )
+                                        }
                                     </label>
                                 </div>
                                 {/* Memory allocated area */}
@@ -160,17 +162,18 @@ export default function StartupPage() {
                                         Allocated Memory
                                     </label>
                                     <label className="absolute -bottom-6 text-sm text-nowrap text-gray-800 dark:text-gray-400">
-                                        {
-                                            allocatedMemory} GB {(allocatedMemory + memoryUsage) >= totalMemory &&
-                                                ` (${(totalMemory - memoryUsage).toFixed(1)} available)`
-                                        }
+                                        {allocatedMemory} GB
+                                        {(allocatedMemory + memoryUsage) >= totalMemory &&
+                                            ` (${(totalMemory - memoryUsage).toFixed(1)} available)`}
                                     </label>
                                     <div
                                         className="absolute top-0 left-0 h-1 transition-all duration-75 bg-blue-300"
-                                        style={{ width: `${(() => {
-                                            const n = (allocatedMemory / (totalMemory - memoryUsage)) * 100;
-                                            return n >= 100 ? 100 : n;
-                                        })()}%` }}
+                                        style={{
+                                            width: `${(() => {
+                                                const n = (allocatedMemory / (totalMemory - memoryUsage)) * 100;
+                                                return n >= 100 ? 100 : n;
+                                            })()}%`
+                                        }}
                                     />
                                 </div>
                             </div>

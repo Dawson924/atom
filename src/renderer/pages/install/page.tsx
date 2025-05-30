@@ -1,12 +1,12 @@
 import ClientPage from './client';
 import ServerPage from './server';
 import ModsPage from './mods';
-import { usePageStore } from '@renderer/hooks/store/page/install';
+import { useTask, useInstallPage } from '@renderer/hooks/store';
+
 
 export default function InstallerPage() {
-    const currentPage = usePageStore((state) => state.currentPage);
-    const goTo = usePageStore((state) => state.goTo);
-    const taskState = usePageStore((state) => state.taskState);
+    const { currentPage, goTo } = useInstallPage();
+    const taskState = useTask((state) => state.taskState);
 
     return (
         <div className="relative h-main bg-blue-100 dark:bg-neutral-700">
@@ -54,15 +54,6 @@ export default function InstallerPage() {
                     </div>
                 </div>
 
-                {/* {SubPage ? (
-                    SubPage
-                ) : selectedPage === 'client' ? (
-                    <ClientPage />
-                ) : selectedPage === 'server' ? (
-                    <ServerPage />
-                ) : selectedPage === 'mods' ? (
-                    <ModsPage />
-                ) : null} */}
                 {typeof currentPage === 'string' ? (
                     currentPage === 'client' ? (
                         <ClientPage />

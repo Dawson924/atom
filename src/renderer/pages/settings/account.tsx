@@ -2,7 +2,7 @@ import { Button, NativeSelect, TextField } from '@mui/material';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import * as skinview3d from 'skinview3d';
 import type { AccountProfile } from '@common/types/auth';
-import { Card, Container, Form, FormInput, FormSelect } from '@renderer/components/commons';
+import { Card, Container, Form, FormInput, FormSelect, Input } from '@renderer/components/commons';
 import { getSkinData } from '../../utils/auth/skin';
 import { InputModal, SelectPromptModal, useModal } from '@renderer/hoc/modal';
 import { useToast } from '@renderer/hoc/toast';
@@ -169,9 +169,8 @@ export default function AccountPage() {
                                 <h4 className="text-sm text-gray-900 dark:text-gray-50">Username</h4>
                             </div>
                             <div className="ml-auto w-full max-w-lg min-w-[200px]">
-                                <input
+                                <Input
                                     name="username"
-                                    className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
                                     defaultValue={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
@@ -182,10 +181,9 @@ export default function AccountPage() {
                                 <h4 className="text-sm text-gray-900 dark:text-gray-50">Password</h4>
                             </div>
                             <div className="ml-auto w-full max-w-lg min-w-[200px]">
-                                <input
+                                <Input
                                     name="password"
                                     type="password"
-                                    className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow"
                                     defaultValue={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
