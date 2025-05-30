@@ -171,7 +171,7 @@ export default function HomePage() {
                         <div className="p-5 w-full h-40 space-y-4">
                             {/* Launch button */}
                             <button
-                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer disabled:cursor-not-allowed border rounded-lg border-blue-400 disabled:border-none hover:bg-blue-100 disabled:bg-neutral-100 dark:border-blue-500 dark:hover:bg-blue-500 dark:disabled:bg-neutral-700"
+                                className="w-full h-16 flex flex-col justify-center items-center transition-all cursor-pointer disabled:cursor-not-allowed border rounded-lg border-blue-300 bg-white disabled:border-none hover:bg-blue-200 disabled:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-blue-600 dark:border-blue-700 dark:disabled:bg-neutral-700"
                                 onClick={async () => {
                                     if (!versionName)
                                         return navigate('home/versions');
