@@ -11,6 +11,7 @@ import { getVersionLoader } from '@renderer/utils/version';
 import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion } from '@xmcl/modrinth';
 import { useEffect, useState } from 'react';
 import { useInstallPage } from '@renderer/hooks/store';
+import { number } from '@common/utils/format';
 
 const client = new ModrinthV2Client();
 
@@ -37,7 +38,7 @@ export default function ModInfoPage({ project }: { project: Project }) {
     const installMod = (id: string, file: ModVersionFile) => {
         ClientService.installMod(id, file)
             .then(() => {
-                addToast(`Installed ${file.filename} for ${id} successfully`);
+                addToast(`Install '${file.filename}' successfully`);
             });
     };
 
@@ -85,7 +86,7 @@ export default function ModInfoPage({ project }: { project: Project }) {
                                 <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4" />
                                 </svg>
-                                {project.downloads}
+                                {number.format(project.downloads)}
                             </div>
                             <div className="text-xs text-gray-400 inline-flex items-center gap-1">
                                 <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -164,8 +165,19 @@ export default function ModInfoPage({ project }: { project: Project }) {
                                                             />
                                                         </div>
                                                         <div className="w-full h-full flex flex-col items-start justify-center">
-                                                            <p className="text-sm text-gray-700 dark:text-gray-50">{projectVersion.name}</p>
-                                                            <p className="text-xs text-gray-400">{file.filename}</p>
+                                                            <p className="text-sm text-gray-700 dark:text-gray-50">
+                                                                {projectVersion.name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-400 space-x-1">
+                                                                <span>{`${file.filename}, `}</span>
+                                                                <span>{`Last updated ${toUTCStringPretty(projectVersion.date_published)}, `}</span>
+                                                                <span>{`${number.format(projectVersion.downloads)} Downloads, `}</span>
+                                                                <span>{
+                                                                    `${projectVersion.version_type === 'release' ? ('Release version')
+                                                                        : projectVersion.version_type === 'beta' ? ('Beta version')
+                                                                            : ('Alpha')}`}
+                                                                </span>
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 );

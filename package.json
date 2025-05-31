@@ -54,6 +54,7 @@
     "framer-motion": "^12.12.2",
     "fs-extra": "^11.3.0",
     "headview3d": "^3.0.2",
+    "short-number": "^1.0.7",
     "skinview3d": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
