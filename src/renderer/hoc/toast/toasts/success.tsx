@@ -43,7 +43,7 @@ export function SuccessToast({
         <>
             <div
                 id="toast-success"
-                className={`z-50 relative flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-neutral-800 duration-300 ${isExiting ? 'animate-fade-out' : 'animate-fade-in'}`}
+                className={`z-50 relative flex items-center w-full p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-neutral-800 duration-300 ${isExiting ? 'animate-fade-out' : 'animate-fade-in'}`}
             >
                 <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
                     <svg
