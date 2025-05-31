@@ -6,7 +6,7 @@ import { Card, Container, Form, FormInput, FormSelect, Input } from '@renderer/c
 import { getSkinData } from '../../utils/auth/skin';
 import { InputModal, SelectPromptModal, useModal } from '@renderer/hoc/modal';
 import { useToast } from '@renderer/hoc/toast';
-import { ConfigService, UserService } from '@renderer/api';
+import { CacheService, ConfigService, UserService } from '@renderer/api';
 import { useSession } from '@renderer/hooks';
 
 const ANIM_SETS = [
@@ -44,7 +44,7 @@ export default function AccountPage() {
                 authOptions,
                 profiles,
             ] = await Promise.all([
-                window.cache.get('account'),
+                CacheService.get('account'),
                 ConfigService.get('authentication'),
                 UserService.getProfiles(),
             ]);
@@ -120,7 +120,7 @@ export default function AccountPage() {
     };
 
     const handleLogin = async () => {
-        window.cache.set('account', { username, password });
+        CacheService.set('account', { username, password });
         UserService.login({ username, password })
             .then((result) => {
                 if (!result.hasMultipleProfiles) {
