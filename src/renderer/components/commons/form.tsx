@@ -8,19 +8,17 @@ type FormItemProps = {
     value: any;
 };
 
-const Form: React.FC<FormHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit }) => {
+const Form: React.FC<FormHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit, ...rest }) => {
     return (
-        <form onSubmit={onSubmit}>
-            <div className="flex flex-col px-5">
-                {children}
-            </div>
+        <form {...rest} onSubmit={onSubmit}>
+            {children}
         </form>
     );
 };
 
 const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>> = ({ title, name, value, onChange }) => {
     return (
-        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
+        <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div style={{ display: title ? 'block' : 'none' }} className="w-32 shrink-0">
                 <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
             </div>
@@ -40,7 +38,7 @@ const FormSelect: React.FC<FormItemProps & {
     placeholder?: string;
 } & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, placeholder, options }) => {
     return (
-        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
+        <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div className="w-32 shrink-0">
                 <h3 className="text-sm text-gray-900 dark:text-gray-50">{title}</h3>
             </div>
@@ -77,7 +75,7 @@ const FormRangeInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElem
     onChange,
 }) => {
     return (
-        <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center">
+        <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div style={{ display: title ? 'block' : 'none' }} className="w-32 shrink-0">
                 <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
             </div>

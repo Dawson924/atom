@@ -2,7 +2,7 @@ import { Button, NativeSelect, TextField } from '@mui/material';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import * as skinview3d from 'skinview3d';
 import type { AccountProfile } from '@common/types/auth';
-import { Card, Container, Form, FormInput, FormSelect, Input } from '@renderer/components/commons';
+import { Card, Container, FormInput, FormSelect, Input, List } from '@renderer/components/commons';
 import { getSkinData } from '../../utils/auth/skin';
 import { InputModal, SelectPromptModal, useModal } from '@renderer/hoc/modal';
 import { useToast } from '@renderer/hoc/toast';
@@ -447,7 +447,7 @@ export default function AccountPage() {
                     {/* Button Action Panel */}
                     {
                         !session.signedIn &&
-                        <div className="px-7 my-2 space-x-4 inline-flex justify-start items-center">
+                        <div className="px-7 mt-3 space-x-4 inline-flex justify-start items-center">
 
                             <Button
                                 variant="contained"
@@ -464,7 +464,7 @@ export default function AccountPage() {
                     title="Yggdrasil Agent"
                     className="mb-6"
                 >
-                    <Form>
+                    <List className="space-y-2">
                         <FormInput
                             title="Server"
                             name="authentication.yggdrasilAgent.server"
@@ -477,12 +477,12 @@ export default function AccountPage() {
                             value={authOptions.yggdrasilAgent.jar}
                             onChange={handleChange}
                         />
-                    </Form>
+                    </List>
                 </Card>}
             <Card
                 title="Profile"
             >
-                <Form>
+                <List className="space-y-2">
                     <FormSelect
                         title="Mode"
                         name="authentication.mode"
@@ -510,7 +510,7 @@ export default function AccountPage() {
                                 })}
                                 placeholder="Not selected"
                             />
-                            <div className="px-2 my-2 space-x-4 w-full flex justify-end">
+                            <div className="px-2 mt-2 space-x-4 w-full flex justify-end">
                                 <Button
                                     type="button"
                                     className="w-fit"
@@ -552,7 +552,7 @@ export default function AccountPage() {
                             </div>
                         </>
                     }
-                </Form>
+                </List>
             </Card>
         </Container>
     );

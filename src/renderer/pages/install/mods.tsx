@@ -76,8 +76,8 @@ export default function ModsPage() {
                         e.preventDefault();
                         searchMods();
                     }}>
-                        <div className="grid grid-cols-3 gap-5">
-                            <div className="px-2 mb-2 w-full h-9.5 col-span-2 flex flex-row space-x-3 items-center">
+                        <div className="px-4 grid grid-cols-3 gap-5">
+                            <div className="px-2 w-full h-9.5 col-span-2 flex flex-row space-x-3 items-center">
                                 <div className="w-14 shrink-0">
                                     <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
                                         Name
@@ -91,7 +91,7 @@ export default function ModsPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="px-2 mb-2 w-full h-9.5 col-span-1 flex flex-row space-x-3 items-center">
+                            <div className="px-2 w-full h-9.5 col-span-1 flex flex-row space-x-3 items-center">
                                 <div className="w-14 shrink-0">
                                     <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
                                         Sort by

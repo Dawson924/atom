@@ -5,7 +5,7 @@ import { MinecraftFolder, ResolvedVersion } from '@xmcl/core';
 import { useEffect, useState } from 'react';
 import { truncateWithEllipsis } from '../../../../common/utils/string';
 import { useNavigate } from '../../../router';
-import { Card, Container, Form } from '@renderer/components/commons';
+import { Card, Container, List } from '@renderer/components/commons';
 import { ClientService, ConfigService } from '@renderer/api';
 
 export default function VersionsPage() {
@@ -55,7 +55,7 @@ export default function VersionsPage() {
                         title="Minecraft"
                         className="mb-6 animate-[slide-down_0.1s_ease-in]"
                     >
-                        <Form>
+                        <List>
                             {
                                 versions?.map((version: ResolvedVersion) => {
                                     if (version.mainClass === 'net.minecraft.client.main.Main')
@@ -81,14 +81,14 @@ export default function VersionsPage() {
                                         );
                                 })
                             }
-                        </Form>
+                        </List>
                     </Card>}
                     {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') &&
                     <Card
                         title="Fabric"
                         className="mb-6 animate-[slide-down_0.3s_ease-in]"
                     >
-                        <Form>
+                        <List>
                             {
                                 versions?.map((version: ResolvedVersion) => {
                                     if (version.mainClass === 'net.fabricmc.loader.impl.launch.knot.KnotClient')
@@ -114,7 +114,7 @@ export default function VersionsPage() {
                                         );
                                 })
                             }
-                        </Form>
+                        </List>
                     </Card>}
                 </Container>
 

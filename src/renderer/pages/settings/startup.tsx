@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Card, Container, Form, FormInput, RangeSlider } from '@renderer/components/commons';
+import { Card, Container, FormInput, List, RangeSlider } from '@renderer/components/commons';
 import { convertUnitsPrecise } from '@common/utils/byte';
 import { ConfigService, SystemService } from '@renderer/api';
 
@@ -82,7 +82,7 @@ export default function StartupPage() {
                 title="Launch"
                 className="mb-6"
             >
-                <Form>
+                <List className="space-y-2">
                     <FormInput
                         title="Minecraft Folder"
                         name="minecraftFolder"
@@ -107,13 +107,13 @@ export default function StartupPage() {
                         value={mcArgs}
                         onChange={handleChange}
                     />
-                </Form>
+                </List>
             </Card>
             <Card
                 title="Memory"
             >
                 {totalMemory && memoryUsage && allocatedMemory >= 0 &&
-                    <Form>
+                    <List>
                         {/* Allocated Memory Range Input */}
                         <div className="px-2 w-full h-8 flex flex-row space-x-3 items-center">
                             <div className="w-32 shrink-0">
@@ -178,7 +178,7 @@ export default function StartupPage() {
                                 </div>
                             </div>
                         </div>
-                    </Form>}
+                    </List>}
             </Card>
         </Container>
     );

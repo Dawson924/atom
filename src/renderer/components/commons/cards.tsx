@@ -7,10 +7,10 @@ const Card: React.FC<React.HTMLAttributes<HTMLDivElement> & {
     return (
         <>
             <div className={clsx(
-                'pb-3 shadow-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 hover:shadow-sm hover:shadow-blue-300 dark:hover:shadow-neutral-800 transition-all group',
+                'pb-3 pt-3 shadow-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 hover:shadow-sm hover:shadow-blue-300 dark:hover:shadow-neutral-800 transition-all group',
                 className
             )}>
-                {title && <div className="px-4 pt-3 mb-2">
+                {title && <div className="px-4 mb-2">
                     <h2 className="text-xs font-bold font-[Inter] uppercase text-gray-900 dark:text-gray-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all">
                         {title}
                     </h2>

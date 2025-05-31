@@ -1,6 +1,6 @@
 import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../App';
-import { Card, Container, Form, FormInput, FormSelect, Input } from '@renderer/components/commons';
+import { Card, Container, FormInput, FormSelect, Input, List } from '@renderer/components/commons';
 import { ConfigService } from '@renderer/api';
 
 export default function AppearancePage() {
@@ -54,7 +54,7 @@ export default function AppearancePage() {
                 title="appearance"
                 className="mb-6"
             >
-                <Form>
+                <List className="space-y-2">
                     <FormSelect
                         title="Theme"
                         value={theme}
@@ -105,7 +105,7 @@ export default function AppearancePage() {
                             </div>
                         </div>}
                     </div>
-                </Form>
+                </List>
             </Card>
         </Container>
     );
