@@ -4,8 +4,8 @@ import * as skinview3d from 'skinview3d';
 import type { AccountProfile } from '@common/types/auth';
 import { Card, Container, FormInput, FormSelect, Input, List } from '@renderer/components/commons';
 import { getSkinData } from '../../utils/auth/skin';
-import { InputModal, SelectPromptModal, useModal } from '@renderer/hoc/modal';
-import { useToast } from '@renderer/hoc/toast';
+import { InputModal, SelectPromptModal, useModal } from '@renderer/components/modal';
+import { useToast } from '@renderer/components/toast';
 import { CacheService, ConfigService, UserService } from '@renderer/api';
 import { useSession } from '@renderer/hooks';
 

@@ -3,7 +3,7 @@ import { useNavigate } from '../../router';
 import * as headview3d from 'headview3d';
 import { getSkinData } from '../../utils/auth/skin';
 import { ClientService, ConfigService, UserService } from '@renderer/api';
-import { useToast } from '@renderer/hoc/toast';
+import { useToast } from '@renderer/components/toast';
 import { useSession } from '@renderer/hooks';
 import { Input } from '@renderer/components/commons';
 
