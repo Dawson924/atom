@@ -23,7 +23,7 @@ const Pagination: React.FC<HTMLAttributes<HTMLDivElement> & PaginationProps> = (
                 {/* 首页按钮 */}
                 <button
                     className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
-                    onClick={() => onPageChange(1)}
+                    onClick={() => currentPage > 0 && onPageChange(1)}
                     disabled={currentPage === 1}
                 >
                     <FaAngleDoubleLeft />
@@ -32,7 +32,7 @@ const Pagination: React.FC<HTMLAttributes<HTMLDivElement> & PaginationProps> = (
                 {/* 上一页按钮 */}
                 <button
                     className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
-                    onClick={() => onPageChange(currentPage - 1)}
+                    onClick={() => currentPage > 0 && onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                 >
                     <FaAngleLeft />
@@ -47,18 +47,18 @@ const Pagination: React.FC<HTMLAttributes<HTMLDivElement> & PaginationProps> = (
 
                 {/* 下一页按钮 */}
                 <button
-                    className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
+                    className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${!totalPages || currentPage === totalPages ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
+                    onClick={() => currentPage > 0 && onPageChange(currentPage + 1)}
+                    disabled={!totalPages || currentPage === totalPages}
                 >
                     <FaAngleRight />
                 </button>
 
                 {/* 尾页按钮 */}
                 <button
-                    className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
-                    onClick={() => onPageChange(totalPages)}
-                    disabled={currentPage === totalPages}
+                    className={`flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 ${!totalPages || currentPage === totalPages ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-neutral-600 dark:hover:text-neutral-300' : ''}`}
+                    onClick={() => currentPage > 0 && onPageChange(totalPages)}
+                    disabled={!totalPages || currentPage === totalPages}
                 >
                     <FaAngleDoubleRight />
                 </button>

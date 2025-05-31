@@ -17,16 +17,20 @@ export default function ModsPage() {
     const { goTo, cacheMap } = useInstallPage();
 
     const [formData, setFormData] = useState<ModSearchFormData>({
-        name: '',
+        name: cacheMap.get('search') || '',
         index: 'relevance'
     });
-    const [resultHits, setResultHits] = useState<SearchResultHit[]>();
+    const [resultHits, setResultHits] = useState<SearchResultHit[]>(cacheMap.get('hits') || []);
     const [pageIndex, setPageIndex] = useState<number>(cacheMap.get('pageIndex') || 1);
     const [totalPages, setTotalPages] = useState<number>();
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        searchMods();
+        if (resultHits?.length === 0)
+            searchMods();
+    }, []);
+
+    useEffect(() => {
         cacheMap.set('pageIndex', pageIndex);
     }, [pageIndex]);
 
@@ -40,16 +44,35 @@ export default function ModsPage() {
 
     const searchMods = () => {
         setLoading(true);
-        const from = (pageIndex - 1) * PAGE_HIT_LIMIT;
-        const to = pageIndex * PAGE_HIT_LIMIT;
+        client.searchProjects({
+            query: formData.name,
+            index: formData.name ? formData.index : 'downloads',
+        }).then(res => {
+            const totals = Number((res.total_hits / PAGE_HIT_LIMIT).toFixed(0));
+            setPageIndex(1);
+            setTotalPages(totals >= 10 ? 10 : totals);
+            setResultHits(res.hits);
+            cacheMap.set('search', formData.name);
+            setLoading(false);
+        }).catch(() => {
+            setLoading(false);
+        });
+    };
+
+    const changePage = (page: number) => {
+        setLoading(true);
+        const from = (page - 1) * PAGE_HIT_LIMIT;
+        const to = page * PAGE_HIT_LIMIT;
         client.searchProjects({
             query: formData.name,
             index: formData.name ? formData.index : 'downloads',
             limit: to
         }).then(res => {
             const totals = Number((res.total_hits / PAGE_HIT_LIMIT).toFixed(0));
-            setTotalPages(totals >= 20 ? 20 : totals);
+            setPageIndex(page);
+            setTotalPages(totals >= 10 ? 10 : totals);
             setResultHits(from > 0 ? res.hits.slice(from - 1, to - 1) : res.hits);
+            cacheMap.set('search', formData.name);
             setLoading(false);
         }).catch(() => {
             setLoading(false);
@@ -115,7 +138,7 @@ export default function ModsPage() {
                         </div>
                     </Form>
                 </Card>
-                {resultHits && !loading && <Card className="px-1 py-3 animate-[slide-down_0.4s_ease-in]">
+                {resultHits?.length > 0 && !loading && <Card className="px-1 py-3 animate-[slide-down_0.4s_ease-in]">
                     <div className="flex flex-col px-2">
                         {
                             resultHits.map(hit => {
@@ -125,17 +148,22 @@ export default function ModsPage() {
                                         variant="standard"
                                         title={hit.title}
                                         description={hit.description}
-                                        onClick={async () => goTo(<ModInfoPage project={await client.getProject(hit.project_id)} />)}
+                                        onClick={async () => {
+                                            cacheMap.set('hits', resultHits);
+                                            goTo(<ModInfoPage project={await client.getProject(hit.project_id)} />);
+                                        }}
                                     />
                                 );
                             })
                         }
                     </div>
                 </Card>}
-                {!loading && <Pagination
+                {resultHits?.length > 0 && !loading && <Pagination
                     currentPage={pageIndex}
                     totalPages={totalPages}
-                    onPageChange={(i) => i > 0 && setPageIndex(i)}
+                    onPageChange={(i) => {
+                        changePage(i);
+                    }}
                     className="mt-4"
                 />}
             </ScrollMemoryContainer>

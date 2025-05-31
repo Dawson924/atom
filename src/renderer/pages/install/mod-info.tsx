@@ -2,7 +2,7 @@ import FabricIcon from '../../assets/images/minecraft/fabric.png';
 import NeoForgeIcon from '../../assets/images/minecraft/neoforge.png';
 import ForgeIcon from '../../assets/images/minecraft/forge.png';
 import { toUTCStringPretty } from '@common/utils/date';
-import { ClientService } from '@renderer/api';
+import { ClientService, ElectronAPI } from '@renderer/api';
 import { Accordion, Card, Container } from '@renderer/components/commons';
 import { useModal, SelectPromptModal } from '@renderer/components/modal';
 import { useToast } from '@renderer/components/toast';
@@ -12,6 +12,7 @@ import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion } from '@xmcl
 import { useEffect, useState } from 'react';
 import { useInstallPage } from '@renderer/hooks/store';
 import { number } from '@common/utils/format';
+import { convertUnitsPrecise } from '@common/utils/byte';
 
 const client = new ModrinthV2Client();
 
@@ -35,11 +36,29 @@ export default function ModInfoPage({ project }: { project: Project }) {
         }
     }, [project]);
 
-    const installMod = (id: string, file: ModVersionFile) => {
-        ClientService.installMod(id, file)
-            .then(() => {
-                addToast(`Install '${file.filename}' successfully`);
+    const downloadFile = async (id: string, file: ModVersionFile) => {
+        let title: string | undefined;
+        let subpath: string;
+        if (file.filename.split('.').includes('jar')) {
+            subpath = 'mods/' + file.filename;
+        }
+        else {
+            title = 'Select shaderpacks/ or resourcepacks/ depends on package type';
+            subpath = file.filename;
+        }
+        try {
+            const folder = await ClientService.getPath(id, subpath);
+            const filepath = await ElectronAPI.showSaveDialog({
+                defaultPath: folder,
+                title,
+                buttonLabel: `Download ${convertUnitsPrecise(file.size, 'B', 'MB')} MB`
             });
+            await ClientService.downloadFile(file, filepath);
+            addToast(`${file.filename} has been installed`, 'success');
+        } catch (err) {
+            console.error(err);
+            addToast(err.message, 'error');
+        }
     };
 
     return (
@@ -127,9 +146,6 @@ export default function ModInfoPage({ project }: { project: Project }) {
                                                                     if (!projectVersion.game_versions.includes(version.minecraftVersion)) {
                                                                         return;
                                                                     }
-                                                                    else if (!projectVersion.loaders.includes(getVersionLoader(version))) {
-                                                                        return;
-                                                                    }
                                                                     return {
                                                                         label: version.id,
                                                                         icon: (
@@ -144,7 +160,7 @@ export default function ModInfoPage({ project }: { project: Project }) {
                                                                                 className="size-5"
                                                                             />
                                                                         ),
-                                                                        onSelect: () => installMod(version.id, file)
+                                                                        onSelect: () => downloadFile(version.id, file)
                                                                     };
                                                                 }).filter(Boolean)
                                                             });
@@ -159,7 +175,7 @@ export default function ModInfoPage({ project }: { project: Project }) {
                                                                         FabricIcon
                                                                     ) : projectVersion.loaders.includes('forge') ? (
                                                                         ForgeIcon
-                                                                    ) : null
+                                                                    ) : project.icon_url
                                                                 }
                                                                 className="w-full h-full rounded-md"
                                                             />

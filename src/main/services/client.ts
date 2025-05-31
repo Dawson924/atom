@@ -1,4 +1,4 @@
-import { launch, LaunchOption, MinecraftFolder, MinecraftPath, Version } from '@xmcl/core';
+import { launch, LaunchOption, MinecraftFolder, Version } from '@xmcl/core';
 import { getFabricLoaderArtifact, getFabricLoaders, getVersionList, installDependenciesTask, installFabricByLoaderArtifact, type FabricArtifactVersion, type MinecraftVersionList } from '@xmcl/installer';
 import { CONFIG } from '../store';
 import { IpcMainEvent } from 'electron';
@@ -7,8 +7,7 @@ import { data, error, ERROR_CODES } from '../libs/response';
 import { findJava } from '../utils/java';
 import { ModVersionFile } from '@xmcl/modrinth';
 import { downloadFile } from '@main/utils/download.mjs';
-import path from 'node:path';
-import fs from 'fs';
+import path, { isAbsolute } from 'node:path';
 import { setupMinecraftDirectory } from '@main/utils/folder';
 
 export class ClientService {
@@ -21,7 +20,15 @@ export class ClientService {
         return data(folder);
     }
 
-    async findVersions() {
+    async getPath(_: IpcMainEvent, id: string, subpath?: string) {
+        const versionFolder = this.minecraftFolder.getVersionRoot(id);
+        if (subpath)
+            return data(path.join(versionFolder, subpath));
+        else
+            return data(versionFolder);
+    }
+
+    async getVersions() {
         return data(await VersionUtils.listVersions(this.minecraftFolder));
     }
 
@@ -93,17 +100,11 @@ export class ClientService {
         return data();
     }
 
-    async installMod(_: IpcMainEvent, id: string, file: ModVersionFile) {
-        const versionDir = this.minecraftFolder.getVersionRoot(id);
-        if (!fs.existsSync(versionDir))
-            return error(ERROR_CODES.NOT_FOUND, 'Cannot find version ' + id, id);
-
-        const modsDir = path.join(versionDir, MinecraftPath.mods);
-        if (!fs.existsSync(modsDir)) {
-            fs.mkdirSync(modsDir, { recursive: true });
+    async downloadFile(_: IpcMainEvent, file: ModVersionFile, path: string) {
+        if (!isAbsolute(path)) {
+            return error(ERROR_CODES.INVALID_ARGUMENT);
         }
-        const modFilePath = path.join(modsDir, file.filename);
-        await downloadFile(file.url, modFilePath);
+        await downloadFile(file.url, path);
         return data();
     }
 

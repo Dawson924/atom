@@ -10,13 +10,14 @@ export class ClientServiceController extends IPCServiceController {
         const clientService = new ClientService();
 
         this.handle('folder', clientService.getFolder.bind(clientService));
-        this.handle('get-versions', clientService.findVersions.bind(clientService));
+        this.handle('get-path', clientService.getPath.bind(clientService));
+        this.handle('get-versions', clientService.getVersions.bind(clientService));
         this.handle('get-version-manifest', clientService.fetchVersionManifest.bind(clientService));
         this.handle('get-fabric-artifacts', clientService.fetchFabricArtifact.bind(clientService));
         this.handle('find-java', clientService.findJava.bind(clientService));
         this.handle('install', clientService.install.bind(clientService));
         this.handle('install-fabric', clientService.installFabric.bind(clientService));
-        this.handle('install-mod', clientService.installMod.bind(clientService));
+        this.handle('download-file', clientService.downloadFile.bind(clientService));
         this.handle('launch', clientService.launch.bind(clientService));
     }
 

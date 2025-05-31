@@ -1,7 +1,15 @@
 import { app, BrowserWindow } from 'electron';
 import isReady from 'electron-squirrel-startup';
 import { IPCServiceController, IPCService } from './core';
-import { AppServiceController, UserServiceController, CacheServiceController, ClientServiceController, ConfigServiceController, UtilityController } from './controllers';
+import {
+    AppServiceController,
+    UserServiceController,
+    CacheServiceController,
+    ClientServiceController,
+    ConfigServiceController,
+    UtilityController,
+    ElectronAPIController
+} from './controllers';
 import path from 'node:path';
 import { CONFIG } from './store';
 import { DefaultWindowOptions } from './libs/window';
@@ -71,6 +79,7 @@ const initializeServices = (ipc: IPCService) => {
         new CacheServiceController(ipc),
         new ClientServiceController(ipc),
         new ConfigServiceController(ipc),
+        new ElectronAPIController(ipc),
         new UtilityController(ipc),
     );
 };

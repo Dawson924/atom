@@ -1,17 +1,26 @@
-import { dialog } from 'electron';
+import { dialog, OpenDialogOptions, SaveDialogOptions } from 'electron';
 import { IPCServiceController, IPCService } from '../core';
-import { data } from '../libs/response';
-
-type DialogProperties = ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[];
+import { data, error, ERROR_CODES } from '../libs/response';
 
 export class ElectronAPIController extends IPCServiceController {
-    protected override readonly namespace: string;
+    protected override readonly namespace = 'electron';
     protected override readonly ipc: IPCService;
 
     protected override registerHandlers() {
-        this.handle('open-dialog', async (_, properties: DialogProperties = ['openFile', 'openDirectory']) => {
-            const result = await dialog.showOpenDialog({ properties });
-            return data(result);
+        this.handle('open-dialog', async (_, options: OpenDialogOptions) => {
+            const { canceled, filePaths } = await dialog.showOpenDialog(this.ipc.mainWindow, options);
+            if (!canceled) {
+                return data(filePaths);
+            }
+            return data([]);
+        });
+
+        this.handle('save-dialog', async (_, options: SaveDialogOptions) => {
+            const { canceled, filePath } = await dialog.showSaveDialog(this.ipc.mainWindow, options);
+            if (!canceled) {
+                return data(filePath);
+            }
+            return error(ERROR_CODES.INTERNAL_ERROR);
         });
     }
 
