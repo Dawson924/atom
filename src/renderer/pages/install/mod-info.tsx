@@ -1,18 +1,15 @@
-import FabricIcon from '../../assets/images/minecraft/fabric.png';
-import NeoForgeIcon from '../../assets/images/minecraft/neoforge.png';
-import ForgeIcon from '../../assets/images/minecraft/forge.png';
 import { toUTCStringPretty } from '@common/utils/date';
 import { ClientService, ElectronAPI } from '@renderer/api';
 import { Accordion, Card, Container } from '@renderer/components/commons';
-import { useModal, SelectPromptModal } from '@renderer/components/modal';
+import { useModal } from '@renderer/components/modal';
 import { useToast } from '@renderer/components/toast';
 import { useClient } from '@renderer/hooks';
-import { getVersionLoader } from '@renderer/utils/version';
 import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion } from '@xmcl/modrinth';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useInstallPage } from '@renderer/hooks/store';
 import { number } from '@common/utils/format';
 import { convertUnitsPrecise } from '@common/utils/byte';
+import { VersionItem } from '@renderer/components/features/mods/version-item';
 
 const client = new ModrinthV2Client();
 
@@ -35,6 +32,21 @@ export default function ModInfoPage({ project }: { project: Project }) {
             setExpandedVersion(null);
         }
     }, [project]);
+
+    // 优化：使用useMemo缓存处理后的数据
+    const filteredVersions = useMemo(() => {
+        if (!project || !projectVersions) return [];
+
+        return project.game_versions
+            .filter(version => version.includes('.') && !version.includes('-'))
+            .toReversed()
+            .map(version => ({
+                version,
+                items: projectVersions
+                    .filter(pv => pv.game_versions.includes(version))
+                    .flatMap(pv => pv.files.map(file => ({ file, projectVersion: pv })))
+            }));
+    }, [project, projectVersions]);
 
     const downloadFile = async (id: string, file: ModVersionFile) => {
         let title: string | undefined;
@@ -117,93 +129,28 @@ export default function ModInfoPage({ project }: { project: Project }) {
                     </div>
                 </div>
             </Card>
-            {project && projectVersions &&
+            {project && filteredVersions &&
                 <div className="flex flex-col">
-                    {
-                        project.game_versions.toReversed().map(version => {
-                            if (!version.includes('.') || version.includes('-'))
-                                return;
-                            return (
-                                <Accordion
-                                    open={expandedVersion === version}
-                                    title={version}
-                                    className="mb-4"
-                                    onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
-                                >
-                                    {
-                                        projectVersions.map(projectVersion => {
-                                            if (!projectVersion.game_versions.includes(version))
-                                                return;
-                                            return projectVersion.files.map(file => {
-                                                return (
-                                                    <div
-                                                        key={file.filename}
-                                                        className="w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-100 dark:hover:bg-neutral-700 transition-all will-change-transform"
-                                                        onClick={() => {
-                                                            openModal(SelectPromptModal, {
-                                                                title: `${projectVersion.version_type}-${projectVersion.version_number}`,
-                                                                items: versions.map(version => {
-                                                                    if (!projectVersion.game_versions.includes(version.minecraftVersion)) {
-                                                                        return;
-                                                                    }
-                                                                    return {
-                                                                        label: version.id,
-                                                                        icon: (
-                                                                            <img
-                                                                                src={
-                                                                                    getVersionLoader(version) === 'neoforge' ? (
-                                                                                        NeoForgeIcon
-                                                                                    ) : getVersionLoader(version) === 'fabric' ? (
-                                                                                        FabricIcon
-                                                                                    ) : null
-                                                                                }
-                                                                                className="size-5"
-                                                                            />
-                                                                        ),
-                                                                        onSelect: () => downloadFile(version.id, file)
-                                                                    };
-                                                                }).filter(Boolean)
-                                                            });
-                                                        }}
-                                                    >
-                                                        <div className="ml-3 w-8 h-8 flex-shrink-0">
-                                                            <img
-                                                                src={
-                                                                    projectVersion.loaders.includes('neoforge') ? (
-                                                                        NeoForgeIcon
-                                                                    ) : projectVersion.loaders.includes('fabric') ? (
-                                                                        FabricIcon
-                                                                    ) : projectVersion.loaders.includes('forge') ? (
-                                                                        ForgeIcon
-                                                                    ) : project.icon_url
-                                                                }
-                                                                className="w-full h-full rounded-md"
-                                                            />
-                                                        </div>
-                                                        <div className="w-full h-full flex flex-col items-start justify-center">
-                                                            <p className="text-sm text-gray-700 dark:text-gray-50">
-                                                                {projectVersion.name}
-                                                            </p>
-                                                            <p className="text-xs text-gray-400 space-x-1">
-                                                                <span>{`${file.filename}, `}</span>
-                                                                <span>{`Last updated ${toUTCStringPretty(projectVersion.date_published)}, `}</span>
-                                                                <span>{`${number.format(projectVersion.downloads)} Downloads, `}</span>
-                                                                <span>{
-                                                                    `${projectVersion.version_type === 'release' ? ('Release version')
-                                                                        : projectVersion.version_type === 'beta' ? ('Beta version')
-                                                                            : ('Alpha')}`}
-                                                                </span>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            });
-                                        })
-                                    }
-                                </Accordion>
-                            );
-                        })
-                    }
+                    {filteredVersions.map(({ version, items }) => (
+                        <Accordion
+                            key={version}
+                            open={expandedVersion === version}
+                            title={version}
+                            className="mb-4 animate-[slide-down_0.4s_ease-in]"
+                            onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
+                        >
+                            {items.map(({ file, projectVersion }) => (
+                                <VersionItem
+                                    key={file.filename}
+                                    file={file}
+                                    projectVersion={projectVersion}
+                                    versions={versions}
+                                    openModal={openModal}
+                                    downloadFile={downloadFile}
+                                />
+                            ))}
+                        </Accordion>
+                    ))}
                 </div>}
         </Container>
     );

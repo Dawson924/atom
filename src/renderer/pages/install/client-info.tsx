@@ -62,7 +62,7 @@ export default function ClientInfoPage({ version }: {
     return (
         <>
             <Container>
-                <div className="px-4 py-2 mb-8 space-x-2 flex items-center shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800">
+                <div className="px-4 py-2 mb-8 space-x-2 flex items-center shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800 animate-[slide-down_0.1s_ease-in]">
                     <button
                         className="size-8 cursor-pointer"
                         onClick={() => goTo('client')}
@@ -108,6 +108,7 @@ export default function ClientInfoPage({ version }: {
                             :
                             'Choose a version'
                     }
+                    className="mb-6 animate-[slide-down_0.4s_ease-in]"
                     onClick={() => setFabricExpanded(pre => !pre)}
                 >
                     {fabricArtifacts.map((artifact, i) => {

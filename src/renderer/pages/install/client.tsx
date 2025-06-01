@@ -4,7 +4,7 @@ import CommandBlock from '../../assets/images/minecraft/command_block.png';
 import { useEffect, useState } from 'react';
 import { MinecraftVersion, MinecraftVersionList } from '@xmcl/installer';
 import { toUTCStringPretty } from '../../../common/utils/date';
-import { Card, Container, List, ListItem } from '@renderer/components/commons';
+import { Accordion, Card, Container, List, ListItem } from '@renderer/components/commons';
 import ClientInfoPage from './client-info';
 import { ClientService } from '@renderer/api';
 import { useInstallPage } from '@renderer/hooks/store';
@@ -13,6 +13,7 @@ export default function ClientPage() {
     const { goTo } = useInstallPage(state => state);
 
     const [versionList, setVersionList] = useState<MinecraftVersionList>();
+    const [expanded, setExpanded] = useState('minecraft');
 
     useEffect(() => {
         const initialize = async () => {
@@ -52,23 +53,23 @@ export default function ClientPage() {
                     </List>
                 </Card>
                 {/* Minecraft Releases */}
-                <Card
+                <Accordion
                     title={`Release (${versionList.versions.length})`}
-                    className="animate-[slide-down_0.3s_ease-in]!"
+                    open={expanded === 'minecraft'}
+                    className="animate-[slide-down_0.4s_ease-in]"
+                    onClick={() => setExpanded(prev => prev !== 'minecraft' ? 'minecraft' : null)}
                 >
-                    <List>
-                        {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion) => {
-                            return (
-                                <ListItem
-                                    src={MinecraftIcon}
-                                    title={version.id}
-                                    description={toUTCStringPretty(version.releaseTime)}
-                                    onClick={() => goTo(<ClientInfoPage version={version.id} />)}
-                                />
-                            );
-                        })}
-                    </List>
-                </Card>
+                    {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion) => {
+                        return (
+                            <ListItem
+                                src={MinecraftIcon}
+                                title={version.id}
+                                description={toUTCStringPretty(version.releaseTime)}
+                                onClick={() => goTo(<ClientInfoPage version={version.id} />)}
+                            />
+                        );
+                    })}
+                </Accordion>
             </Container>
         </>
     );
