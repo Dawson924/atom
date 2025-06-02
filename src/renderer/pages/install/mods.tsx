@@ -22,7 +22,6 @@ export default function ModsPage() {
     });
     const [resultHits, setResultHits] = useState<SearchResultHit[]>(cacheMap.get('hits') || []);
     const [pageIndex, setPageIndex] = useState<number>(cacheMap.get('pageIndex') || 1);
-    const [totalPages, setTotalPages] = useState<number>();
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
@@ -48,11 +47,9 @@ export default function ModsPage() {
             query: formData.name,
             index: formData.name ? formData.index : 'downloads',
         }).then(res => {
-            const totals = Number((res.total_hits / PAGE_HIT_LIMIT).toFixed(0));
-            setPageIndex(1);
-            setTotalPages(totals >= 10 ? 10 : totals);
-            setResultHits(res.hits);
             cacheMap.set('search', formData.name);
+            setPageIndex(1);
+            setResultHits(res.hits);
             setLoading(false);
         }).catch(() => {
             setLoading(false);
@@ -60,6 +57,9 @@ export default function ModsPage() {
     };
 
     const changePage = (page: number) => {
+        if (resultHits.length !== PAGE_HIT_LIMIT && page > pageIndex)
+            return;
+
         setLoading(true);
         const from = (page - 1) * PAGE_HIT_LIMIT;
         const to = page * PAGE_HIT_LIMIT;
@@ -68,11 +68,9 @@ export default function ModsPage() {
             index: formData.name ? formData.index : 'downloads',
             limit: to
         }).then(res => {
-            const totals = Number((res.total_hits / PAGE_HIT_LIMIT).toFixed(0));
-            setPageIndex(page);
-            setTotalPages(totals >= 10 ? 10 : totals);
-            setResultHits(from > 0 ? res.hits.slice(from - 1, to - 1) : res.hits);
             cacheMap.set('search', formData.name);
+            setPageIndex(page);
+            setResultHits(from > 0 ? res.hits.slice(from - 1, to - 1) : res.hits);
             setLoading(false);
         }).catch(() => {
             setLoading(false);
@@ -160,7 +158,6 @@ export default function ModsPage() {
                 </Card>}
                 {resultHits?.length > 0 && !loading && <Pagination
                     currentPage={pageIndex}
-                    totalPages={totalPages}
                     onPageChange={(i) => {
                         changePage(i);
                     }}
