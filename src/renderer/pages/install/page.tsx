@@ -1,12 +1,12 @@
 import ClientPage from './client';
 import ServerPage from './server';
 import ModsPage from './mods';
-import { useTask, useInstallPage } from '@renderer/hooks/store';
+import { useInstallPage } from '@renderer/hooks/store';
+import { TaskFloatingButton } from '@renderer/components/features/task/fab';
 
 
 export default function InstallerPage() {
     const { currentPage, goTo } = useInstallPage();
-    const taskState = useTask((state) => state.taskState);
 
     return (
         <div className="relative h-main bg-blue-100 dark:bg-neutral-700">
@@ -64,14 +64,7 @@ export default function InstallerPage() {
                     ) : null
                 ) : currentPage || null}
 
-                {taskState && <div
-                    style={{ width: `${taskState.progress}%` }}
-                    className="z-20 fixed inset-x-0 bottom-0 rounded-lg border-2 border-blue-600 transition-all"
-                >
-                    <div className="relative">
-                        <label className="absolute left-4 bottom-2">{taskState.taskName}</label>
-                    </div>
-                </div>}
+                <TaskFloatingButton />
 
             </div>
         </div>

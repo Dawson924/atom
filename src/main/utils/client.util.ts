@@ -16,8 +16,7 @@ export type InstallTaskHandler = {
 // 安装任务通用处理器
 export const createTaskHandler = (
     event: IpcMainEvent,
-    taskType: string,
-    taskName: string,
+    name: string,
     id: string,
     version: string
 ): InstallTaskHandler => ({
@@ -25,8 +24,7 @@ export const createTaskHandler = (
         event.sender.send('on-progress', {
             id,
             version,
-            task: `task:${taskType}`,
-            taskName,
+            name,
             progress: (task.progress / task.total) * 100,
         });
     },
@@ -34,7 +32,7 @@ export const createTaskHandler = (
         event.sender.send('on-failed', {
             id,
             version,
-            task: `task:${taskType}`,
+            name,
         });
     },
 });
@@ -43,12 +41,13 @@ export const createTaskHandler = (
 export const installVersionTask = async (
     folder: MinecraftFolder,
     version: MinecraftVersion,
-    handler: InstallTaskHandler,
-    depsHandler: InstallTaskHandler,
+    jsonTask: InstallTaskHandler,
+    jarTask: InstallTaskHandler,
+    depsTask: InstallTaskHandler,
 ) => {
     // 安装JSON
     await new InstallJsonTask(version, folder, {})
-        .startAndWait(handler);
+        .startAndWait(jsonTask);
 
     // 解析版本
     const parsedVersion = await Version.parse(folder, version.id);
@@ -56,7 +55,7 @@ export const installVersionTask = async (
 
     // 安装JAR
     await new InstallJarTask(parsedVersion, folder, {})
-        .startAndWait(handler);
+        .startAndWait(jarTask);
 
     // 写入版本文件
     await writeFile(
@@ -66,7 +65,7 @@ export const installVersionTask = async (
 
     // 安装依赖
     await installDependenciesTask(await Version.parse(folder, version.id))
-        .startAndWait(depsHandler);
+        .startAndWait(depsTask);
 };
 
 // 获取启动配置

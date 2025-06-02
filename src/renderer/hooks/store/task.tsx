@@ -14,21 +14,21 @@ type DownloadTask = {
 type TaskState = {
     id: string;
     version: string;
-    task: `task:${string}`;
+    name: `task:${string}`;
     taskName: string;
     progress: number;
 };
 
 interface TaskStore {
     currentTask: DownloadTask | null;
-    taskState: TaskState | null;
+    taskStates: TaskState[];
     isProcessing: boolean;
     executeTask: (taskParams: DownloadTask) => Promise<void>;
 }
 
 export const useTask = create<TaskStore>((set, get) => ({
     currentTask: null,
-    taskState: null,
+    taskStates: [],
     isProcessing: false,
 
     executeTask: async (taskParams) => {
@@ -43,22 +43,32 @@ export const useTask = create<TaskStore>((set, get) => ({
         window.api.removeListeners('on-complete');
         window.api.removeListeners('on-failed');
 
-        set({ currentTask: task, isProcessing: true, taskState: null });
+        set({ currentTask: task, isProcessing: true, taskStates: [] });
 
         try {
             // 绑定事件监听
             window.api.onProcess((_, state: TaskState) => {
-                set({ taskState: state });
+                // 更新或添加任务状态
+                set((prev) => {
+                    const taskIndex = prev.taskStates.findIndex(t => t.name === state.name);
+                    if (taskIndex >= 0) {
+                        const newTaskStates = [...prev.taskStates];
+                        newTaskStates[taskIndex] = state;
+                        return { taskStates: newTaskStates };
+                    } else {
+                        return { taskStates: [...prev.taskStates, state] };
+                    }
+                });
                 task.onProgress?.(state.progress); // 传递进度
             });
 
             window.api.onComplete(() => {
-                set({ taskState: null, isProcessing: false, currentTask: null });
+                set({ isProcessing: false, currentTask: null });
                 task.onComplete?.();
             });
 
             window.api.onFailed(() => {
-                set({ taskState: null, isProcessing: false, currentTask: null });
+                set({ isProcessing: false, currentTask: null });
                 task.onError?.(new Error('Task failed'));
             });
 

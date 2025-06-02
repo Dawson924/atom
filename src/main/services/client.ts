@@ -56,8 +56,9 @@ export class ClientService {
     }
 
     async install(event: IpcMainEvent, id: string, version: string) {
-        const handler = createTaskHandler(event, 'install', 'Downloading Minecraft', id, version);
-        const depsHandler = createTaskHandler(event, 'install', 'Installing Dependencies', id, version);
+        const jsonTask = createTaskHandler(event, 'task:json', id, version);
+        const jarTask = createTaskHandler(event, 'task:jar', id, version);
+        const depsTask = createTaskHandler(event, 'task:dependencies', id, version);
 
         const versionInfo = await this.resolveVersion(version);
         versionInfo.id = id;
@@ -65,8 +66,9 @@ export class ClientService {
         await installVersionTask(
             this.minecraftFolder,
             versionInfo,
-            handler,
-            depsHandler
+            jsonTask,
+            jarTask,
+            depsTask
         );
 
         event.sender.send('on-complete');
@@ -75,14 +77,21 @@ export class ClientService {
     }
 
     async installFabric(event: IpcMainEvent, id: string, version: string, loaderVersion: string) {
-        const baseHandler = createTaskHandler(event, 'install', 'Downloading Fabric', id, version);
-        const depsHandler = createTaskHandler(event, 'install', 'Installing Dependencies', id, version);
+        const jsonTask = createTaskHandler(event, 'task:version', id, version);
+        const jarTask = createTaskHandler(event, 'task:version', id, version);
+        const depsTask = createTaskHandler(event, 'task:dependencies', id, version);
 
         // 安装基础版本
         const inheritor = VersionUtils.createInheritVersionId(version);
         const mcInfo = await this.resolveVersion(version);
         mcInfo.id = inheritor;
-        await installVersionTask(this.minecraftFolder, mcInfo, baseHandler, depsHandler);
+        await installVersionTask(
+            this.minecraftFolder,
+            mcInfo,
+            jsonTask,
+            jarTask,
+            depsTask
+        );
 
         // 安装Fabric
         const fabricVersionName = await installFabricByLoaderArtifact(
@@ -93,7 +102,7 @@ export class ClientService {
 
         // 安装依赖
         await installDependenciesTask(await Version.parse(this.minecraftFolder, fabricVersionName))
-            .startAndWait(depsHandler);
+            .startAndWait(depsTask);
 
         event.sender.send('on-complete');
 

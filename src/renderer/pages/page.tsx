@@ -7,6 +7,7 @@ import SettingsPage from './settings/page';
 import InstallerPage from './install/page';
 import VersionsPage from './home/versions/page';
 import ManagePage from './home/manage/page';
+import TaskPage from './task/page';
 
 const routes = [
     {
@@ -119,6 +120,13 @@ const routes = [
             </svg>
         ),
         element: <SettingsPage />
+    }
+];
+
+const backgroundRoutes = [
+    {
+        path: 'task',
+        element: <TaskPage />
     }
 ];
 
@@ -280,7 +288,7 @@ export default function Page(): React.JSX.Element {
             </div>
 
             <main className="h-main overflow-hidden">
-                <RouteProvider routes={routes} path={path} setPath={setPath} />
+                <RouteProvider routes={[...routes, ...backgroundRoutes]} path={path} setPath={setPath} />
             </main>
         </div>
     );
