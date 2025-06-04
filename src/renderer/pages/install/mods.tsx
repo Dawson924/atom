@@ -1,15 +1,17 @@
 import { ModrinthV2Client, SearchResultHit } from '@xmcl/modrinth';
-import { ChangeEvent, UIEvent, useEffect, useState } from 'react';
+import { ChangeEvent, UIEvent, useEffect, useRef, useState } from 'react';
 import { Card, Form, Input, ListItem, Pagination, ScrollMemoryContainer } from '@renderer/components/commons';
 import ModInfoPage from './mod-info';
 import { useInstallPage } from '@renderer/hooks/store';
 
 type ModSearchFormData = {
     name: string;
-    index: string;
+    index: 'relevance' | 'downloads';
+    type: 'mod' | 'modpack' | 'resourcepack' | 'shader' | 'plugin';
 };
 
 const PAGE_HIT_LIMIT = 10;
+const DEBOUNCE_DELAY = 300;
 
 const client = new ModrinthV2Client();
 
@@ -18,16 +20,23 @@ export default function ModsPage() {
 
     const [formData, setFormData] = useState<ModSearchFormData>({
         name: cacheMap.get('search') || '',
-        index: 'relevance'
+        index: 'relevance',
+        type: cacheMap.get('type') || 'mod',
     });
-    const [resultHits, setResultHits] = useState<SearchResultHit[]>(cacheMap.get('hits') || []);
+    const [resultHits, setResultHits] = useState<SearchResultHit[]>([]);
     const [pageIndex, setPageIndex] = useState<number>(cacheMap.get('pageIndex') || 1);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         if (resultHits?.length === 0)
             searchMods();
-    }, []);
+        else if (formData)
+            debounceSearchMods();
+    }, [formData]);
+
+    useEffect(() => {
+        cacheMap.set('type', formData.type);
+    }, [formData.type]);
 
     useEffect(() => {
         cacheMap.set('pageIndex', pageIndex);
@@ -46,6 +55,7 @@ export default function ModsPage() {
         client.searchProjects({
             query: formData.name,
             index: formData.name ? formData.index : 'downloads',
+            facets: JSON.stringify([[`project_type=${formData.type}`]])
         }).then(res => {
             cacheMap.set('search', formData.name);
             setPageIndex(1);
@@ -56,21 +66,34 @@ export default function ModsPage() {
         });
     };
 
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+    const debounceSearchMods = () => {
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+        debounceTimer.current = setTimeout(() => {
+            searchMods();
+            debounceTimer.current = null;
+        }, DEBOUNCE_DELAY);
+    };
+
     const changePage = (page: number) => {
         if (resultHits.length !== PAGE_HIT_LIMIT && page > pageIndex)
             return;
 
         setLoading(true);
-        const from = (page - 1) * PAGE_HIT_LIMIT;
-        const to = page * PAGE_HIT_LIMIT;
+        const offset = (page - 1) * PAGE_HIT_LIMIT;
         client.searchProjects({
             query: formData.name,
             index: formData.name ? formData.index : 'downloads',
-            limit: to
+            offset: offset,
+            limit: PAGE_HIT_LIMIT,
+            facets: JSON.stringify([[`project_type=${formData.type}`]])
         }).then(res => {
             cacheMap.set('search', formData.name);
             setPageIndex(page);
-            setResultHits(from > 0 ? res.hits.slice(from - 1, to - 1) : res.hits);
+            setResultHits(res.hits);
             setLoading(false);
         }).catch(() => {
             setLoading(false);
@@ -97,8 +120,8 @@ export default function ModsPage() {
                         e.preventDefault();
                         searchMods();
                     }}>
-                        <div className="px-4 grid grid-cols-3 gap-5">
-                            <div className="px-2 w-full h-9.5 col-span-2 flex flex-row space-x-3 items-center">
+                        <div className="px-4 grid grid-cols-4 lg:grid-cols-5 gap-1.5">
+                            <div className="px-2 w-full h-9.5 col-span-2 lg:col-span-3 flex flex-row space-x-3 items-center">
                                 <div className="w-14 shrink-0">
                                     <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
                                         Name
@@ -112,7 +135,7 @@ export default function ModsPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="px-2 w-full h-9.5 col-span-1 flex flex-row space-x-3 items-center">
+                            <div className="px-2 w-full h-9.5 col-span-2 flex flex-row space-x-3 items-center">
                                 <div className="w-14 shrink-0">
                                     <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
                                         Sort by
@@ -127,6 +150,23 @@ export default function ModsPage() {
                                     >
                                         <option value="relevance">Relevance</option>
                                         <option value="downloads">Downloads</option>
+                                    </select>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                    </svg>
+                                </div>
+                                <div className="relative w-full items-center">
+                                    <select
+                                        name="type"
+                                        className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow appearance-none cursor-pointer"
+                                        defaultValue={formData.type}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="mod">Mod</option>
+                                        <option value="shader">Shader</option>
+                                        <option value="resourcepack">Resource Pack</option>
+                                        <option value="plugin">Plugin</option>
+                                        <option value="datapack">Datapack</option>
                                     </select>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />

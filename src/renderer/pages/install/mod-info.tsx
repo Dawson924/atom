@@ -1,52 +1,104 @@
 import { toUTCStringPretty } from '@common/utils/date';
 import { ClientService, ElectronAPI } from '@renderer/api';
-import { Accordion, Card, Container } from '@renderer/components/commons';
+import { Accordion, Card, Container, ListItem } from '@renderer/components/commons';
 import { useModal } from '@renderer/components/modal';
 import { useToast } from '@renderer/components/toast';
 import { useClient } from '@renderer/hooks';
 import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion } from '@xmcl/modrinth';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useInstallPage } from '@renderer/hooks/store';
 import { number } from '@common/utils/format';
 import { convertUnitsPrecise } from '@common/utils/byte';
 import { VersionItem } from '@renderer/components/features/mods/version-item';
+import { flattenAndDeduplicate } from '@common/utils/array';
+
+type Dependencies = Array<{ version_id: string | null; project_id: string; dependency_type: 'required' | 'optional' | 'incompatible' | 'embedded' }>;
 
 const client = new ModrinthV2Client();
 
-export default function ModInfoPage({ project }: { project: Project }) {
+export default function ModInfoPage(props: { project: Project }) {
     const { goTo } = useInstallPage();
     const { versions } = useClient();
     const { openModal } = useModal();
     const { addToast } = useToast();
 
-    const [projectVersions, setProjectVersions] = useState<ProjectVersion[]>(null);
+    const [project, setProject] = useState(props.project);
     const [expandedVersion, setExpandedVersion] = useState<string>(null);
+    const [processedVersions, setProcessedVersions] = useState<{
+        version: string;
+        items: { file: ModVersionFile; projectVersion: ProjectVersion }[];
+        dependencies: Project[];
+    }[]>([]);
+    // 加载状态
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        if (project) {
-            client.getProjectVersions(project.id)
-                .then(setProjectVersions);
-        }
-        else {
-            setProjectVersions(null);
-            setExpandedVersion(null);
-        }
+        const processData = async () => {
+            if (!project) return;
+
+            try {
+                setIsLoading(true);
+                // 重置处理后的版本数据
+                setProcessedVersions([]);
+
+                // 始终获取最新的项目版本数据
+                const versions = await client.getProjectVersions(project.id);
+
+                // 直接处理版本数据，不需要等待下一次渲染
+                // 过滤和排序版本号
+                const gameVersions = project.game_versions
+                    .filter(version => version.includes('.') && !version.includes('-'))
+                    .toReversed();
+
+                // 并行获取所有依赖项
+                const allDependencies: Dependencies = flattenAndDeduplicate(versions, 'dependencies', 'project_id');
+                const dependencyMap = new Map<string, Project>();
+
+                // 批量获取依赖项并建立映射
+                await Promise.all(allDependencies.map(async dep => {
+                    const versionData = await client.getProject(dep.project_id);
+                    dependencyMap.set(dep.project_id, versionData);
+                }));
+
+                // 处理每个版本
+                const processed = gameVersions.map(version => {
+                    const items = versions
+                        .filter(pv => pv.game_versions.includes(version))
+                        .flatMap(pv => pv.files.map(file => ({ file, projectVersion: pv })));
+
+                    const dependencies = allDependencies
+                        .filter(dep => items.some(item => item.projectVersion.dependencies.some(d => d.project_id === dep.project_id)))
+                        .map(dep => dependencyMap.get(dep.project_id));
+
+                    return {
+                        version,
+                        items,
+                        dependencies
+                    };
+                });
+
+                setProcessedVersions(processed);
+            } catch (error) {
+                console.error('Error processing data:', error);
+                addToast('Failed to load versions', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        processData();
     }, [project]);
 
-    // 优化：使用useMemo缓存处理后的数据
-    const filteredVersions = useMemo(() => {
-        if (!project || !projectVersions) return [];
+    const resetState = () => {
+        setExpandedVersion(null);
+        setProcessedVersions([]);
+        setIsLoading(false);
+    };
 
-        return project.game_versions
-            .filter(version => version.includes('.') && !version.includes('-'))
-            .toReversed()
-            .map(version => ({
-                version,
-                items: projectVersions
-                    .filter(pv => pv.game_versions.includes(version))
-                    .flatMap(pv => pv.files.map(file => ({ file, projectVersion: pv })))
-            }));
-    }, [project, projectVersions]);
+    const handleDependencyClick = async (dep: Project) => {
+        resetState();
+        setProject(dep);
+    };
 
     const downloadFile = async (id: string, file: ModVersionFile) => {
         let title: string | undefined;
@@ -69,7 +121,6 @@ export default function ModInfoPage({ project }: { project: Project }) {
             addToast(`${file.filename} has been installed`, 'success');
         } catch (err) {
             console.error(err);
-            addToast(err.message, 'error');
         }
     };
 
@@ -129,29 +180,53 @@ export default function ModInfoPage({ project }: { project: Project }) {
                     </div>
                 </div>
             </Card>
-            {project && filteredVersions &&
+            {project && (
                 <div className="flex flex-col">
-                    {filteredVersions.map(({ version, items }) => (
-                        <Accordion
-                            key={version}
-                            open={expandedVersion === version}
-                            title={version}
-                            className="mb-4 animate-[slide-down_0.4s_ease-in]"
-                            onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
-                        >
-                            {items.map(({ file, projectVersion }) => (
-                                <VersionItem
-                                    key={file.filename}
-                                    file={file}
-                                    projectVersion={projectVersion}
-                                    versions={versions}
-                                    openModal={openModal}
-                                    downloadFile={downloadFile}
-                                />
-                            ))}
-                        </Accordion>
-                    ))}
-                </div>}
+                    {isLoading ? (
+                        <div className="text-center py-8 text-gray-600 dark:text-gray-400">Loading versions...</div>
+                    ) : processedVersions.length === 0 ? (
+                        <div className="text-center py-8 text-gray-600 dark:text-gray-400">No versions available</div>
+                    ) : (
+                        processedVersions.map(({ version, items, dependencies }) => (
+                            <Accordion
+                                key={version}
+                                open={expandedVersion === version}
+                                title={version}
+                                className="mb-4 animate-[slide-down_0.4s_ease-in]"
+                                onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
+                            >
+                                {dependencies && dependencies.length > 0 && (
+                                    <div className="mb-3">
+                                        <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Dependencies</p>
+                                        {dependencies.map(dep => (
+                                            <ListItem
+                                                variant="standard"
+                                                src={dep.icon_url}
+                                                title={dep.title}
+                                                description={dep.description}
+                                                onClick={async () => await handleDependencyClick(dep)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                {dependencies && dependencies.length > 0 && (
+                                    <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Artifacts</p>
+                                )}
+                                {items.map(({ file, projectVersion }) => (
+                                    <VersionItem
+                                        key={file.filename}
+                                        file={file}
+                                        projectVersion={projectVersion}
+                                        versions={versions}
+                                        openModal={openModal}
+                                        downloadFile={downloadFile}
+                                    />
+                                ))}
+                            </Accordion>
+                        ))
+                    )}
+                </div>
+            )}
         </Container>
     );
 }
