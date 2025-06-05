@@ -212,9 +212,9 @@ export default function ModInfoPage(props: { project: Project }) {
                                 {dependencies && dependencies.length > 0 && (
                                     <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Artifacts</p>
                                 )}
-                                {items.map(({ file, projectVersion }) => (
+                                {items.map(({ file, projectVersion }, index) => (
                                     <VersionItem
-                                        key={file.filename}
+                                        key={`${file.filename}_${index}`}
                                         file={file}
                                         projectVersion={projectVersion}
                                         versions={versions}

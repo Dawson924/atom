@@ -109,7 +109,6 @@ export const ListItem: React.FC<
     return (
         <div
             {...rest}
-            key={title}
             onClick={onClick}
             className={clsx(
                 'w-full will-change-transform',

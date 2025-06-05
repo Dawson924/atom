@@ -59,9 +59,10 @@ export default function ClientPage() {
                     className="animate-[slide-down_0.4s_ease-in]"
                     onClick={() => setExpanded(prev => prev !== 'minecraft' ? 'minecraft' : null)}
                 >
-                    {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion) => {
+                    {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion, index) => {
                         return (
                             <ListItem
+                                key={`${version.id}_${index}`}
                                 src={MinecraftIcon}
                                 title={version.id}
                                 description={toUTCStringPretty(version.releaseTime)}

@@ -182,6 +182,7 @@ export default function ModsPage() {
                             resultHits.map(hit => {
                                 return (
                                     <ListItem
+                                            key={hit.title}
                                         src={hit.icon_url}
                                         variant="standard"
                                         title={hit.title}
