@@ -1,10 +1,9 @@
 import { toUTCStringPretty } from '@common/utils/date';
 import { ClientService, ElectronAPI } from '@renderer/api';
 import { Accordion, Card, Container, ListItem } from '@renderer/components/commons';
-import { useModal } from '@renderer/components/modal';
 import { useToast } from '@renderer/components/toast';
 import { useClient } from '@renderer/hooks';
-import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion } from '@xmcl/modrinth';
+import { ModrinthV2Client, ModVersionFile, Project, ProjectVersion, SearchResultHit } from '@xmcl/modrinth';
 import { useEffect, useState } from 'react';
 import { useInstallPage } from '@renderer/hooks/store';
 import { number } from '@common/utils/format';
@@ -16,10 +15,9 @@ type Dependencies = Array<{ version_id: string | null; project_id: string; depen
 
 const client = new ModrinthV2Client();
 
-export default function ModInfoPage(props: { project: Project }) {
+export default function ModInfoPage(props: { project: Project, hit: SearchResultHit }) {
     const { goTo } = useInstallPage();
     const { versions } = useClient();
-    const { openModal } = useModal();
     const { addToast } = useToast();
 
     const [project, setProject] = useState(props.project);
@@ -192,7 +190,7 @@ export default function ModInfoPage(props: { project: Project }) {
                                 key={version}
                                 open={expandedVersion === version}
                                 title={version}
-                                className="mb-4 animate-[slide-down_0.4s_ease-in]"
+                                className="mb-4 animate-[slide-down_0.4s_ease-in] will-change-transform"
                                 onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
                             >
                                 {dependencies && dependencies.length > 0 && (
@@ -204,7 +202,7 @@ export default function ModInfoPage(props: { project: Project }) {
                                                 src={dep.icon_url}
                                                 title={dep.title}
                                                 description={dep.description}
-                                                onClick={async () => await handleDependencyClick(dep)}
+                                                onClick={() => handleDependencyClick(dep)}
                                             />
                                         ))}
                                     </div>
@@ -218,7 +216,6 @@ export default function ModInfoPage(props: { project: Project }) {
                                         file={file}
                                         projectVersion={projectVersion}
                                         versions={versions}
-                                        openModal={openModal}
                                         downloadFile={downloadFile}
                                     />
                                 ))}

@@ -1,6 +1,6 @@
 import { ModrinthV2Client, SearchResultHit } from '@xmcl/modrinth';
 import { ChangeEvent, UIEvent, useEffect, useRef, useState } from 'react';
-import { Card, Form, Input, ListItem, Pagination, ScrollMemoryContainer } from '@renderer/components/commons';
+import { Card, CircleSpinner, Form, Input, ListItem, Pagination, ScrollMemoryContainer, Select } from '@renderer/components/commons';
 import ModInfoPage from './mod-info';
 import { useInstallPage } from '@renderer/hooks/store';
 
@@ -24,12 +24,19 @@ export default function ModsPage() {
         type: cacheMap.get('type') || 'mod',
     });
     const [resultHits, setResultHits] = useState<SearchResultHit[]>([]);
-    const [pageIndex, setPageIndex] = useState<number>(cacheMap.get('pageIndex') || 1);
+    const [pageIndex, setPageIndex] = useState<number>(cacheMap.get('page') || 1);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        if (resultHits?.length === 0)
-            searchMods();
+        if (resultHits.length === 0) {
+            const hits = cacheMap.get('hits');
+            if (hits)
+                setResultHits(hits);
+            else if (pageIndex > 1)
+                changePage(pageIndex);
+            else
+                searchMods();
+        }
         else if (formData)
             debounceSearchMods();
     }, [formData]);
@@ -37,10 +44,6 @@ export default function ModsPage() {
     useEffect(() => {
         cacheMap.set('type', formData.type);
     }, [formData.type]);
-
-    useEffect(() => {
-        cacheMap.set('pageIndex', pageIndex);
-    }, [pageIndex]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -57,11 +60,15 @@ export default function ModsPage() {
             index: formData.name ? formData.index : 'downloads',
             facets: JSON.stringify([[`project_type=${formData.type}`]])
         }).then(res => {
+            if (res.hits.length === 0) {
+                return;
+            }
             cacheMap.set('search', formData.name);
+            cacheMap.set('page', 1);
+            cacheMap.set('hits', res.hits);
             setPageIndex(1);
             setResultHits(res.hits);
-            setLoading(false);
-        }).catch(() => {
+        }).finally(() => {
             setLoading(false);
         });
     };
@@ -91,11 +98,15 @@ export default function ModsPage() {
             limit: PAGE_HIT_LIMIT,
             facets: JSON.stringify([[`project_type=${formData.type}`]])
         }).then(res => {
+            if (res.hits.length === 0) {
+                return;
+            }
             cacheMap.set('search', formData.name);
+            cacheMap.set('page', page);
+            cacheMap.set('hits', res.hits);
             setPageIndex(page);
             setResultHits(res.hits);
-            setLoading(false);
-        }).catch(() => {
+        }).finally(() => {
             setLoading(false);
         });
     };
@@ -109,7 +120,7 @@ export default function ModsPage() {
         <>
             <ScrollMemoryContainer
                 onScroll={handleScroll}
-                contentLoaded={!!resultHits}
+                contentLoaded={(resultHits.length !== 0)}
                 defaultPosition={cacheMap.get('scrollTop')}
             >
                 <Card
@@ -142,32 +153,32 @@ export default function ModsPage() {
                                     </h3>
                                 </div>
                                 <div className="relative w-full items-center">
-                                    <select
+                                    <Select
                                         name="index"
-                                        className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow appearance-none cursor-pointer"
                                         defaultValue={formData.index}
                                         onChange={handleChange}
-                                    >
-                                        <option value="relevance">Relevance</option>
-                                        <option value="downloads">Downloads</option>
-                                    </select>
+                                        options={[
+                                            { label: 'Relevance', value: 'relevance' },
+                                            { label: 'Downloads', value: 'downloads' }
+                                        ]}
+                                    />
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                     </svg>
                                 </div>
                                 <div className="relative w-full items-center">
-                                    <select
+                                    <Select
                                         name="type"
-                                        className="w-full h-9.5 bg-transparent placeholder:text-slate-400 text-gray-700 dark:text-gray-300 text-sm border border-slate-200 dark:border-neutral-500 rounded-md pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-xs focus:shadow appearance-none cursor-pointer"
                                         defaultValue={formData.type}
                                         onChange={handleChange}
-                                    >
-                                        <option value="mod">Mod</option>
-                                        <option value="shader">Shader</option>
-                                        <option value="resourcepack">Resource Pack</option>
-                                        <option value="plugin">Plugin</option>
-                                        <option value="datapack">Datapack</option>
-                                    </select>
+                                        options={[
+                                            { label: 'Mod', value: 'mod' },
+                                            { label: 'Shader', value: 'shader' },
+                                            { label: 'Resource Pack', value: 'resourcepack' },
+                                            { label: 'Plugin', value: 'plugin' },
+                                            { label: 'Datapack', value: 'datapack' },
+                                        ]}
+                                    />
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                     </svg>
@@ -176,27 +187,33 @@ export default function ModsPage() {
                         </div>
                     </Form>
                 </Card>
-                {resultHits?.length > 0 && !loading && <Card className="px-1 py-3 animate-[slide-down_0.4s_ease-in]">
-                    <div className="flex flex-col px-2">
-                        {
-                            resultHits.map(hit => {
-                                return (
-                                    <ListItem
+                {loading ? (
+                    <CircleSpinner text="Loading mods..." />
+                ) : resultHits.length === 0 ? (
+                    <div className="text-center py-8 text-gray-600 dark:text-gray-400">No versions available</div>
+                ) : (
+                    <Card className="px-1 py-3 animate-[slide-down_0.4s_ease-in]">
+                        <div className="flex flex-col px-2">
+                            {
+                                resultHits.map(hit => {
+                                    return (
+                                        <ListItem
                                             key={hit.title}
-                                        src={hit.icon_url}
-                                        variant="standard"
-                                        title={hit.title}
-                                        description={hit.description}
-                                        onClick={async () => {
-                                            cacheMap.set('hits', resultHits);
-                                            goTo(<ModInfoPage project={await client.getProject(hit.project_id)} />);
-                                        }}
-                                    />
-                                );
-                            })
-                        }
-                    </div>
-                </Card>}
+                                            src={hit.icon_url}
+                                            variant="standard"
+                                            title={hit.title}
+                                            description={hit.description}
+                                            onClick={async () => {
+                                                cacheMap.set('hits', resultHits);
+                                                goTo(<ModInfoPage project={await client.getProject(hit.project_id)} hit={hit} />);
+                                            }}
+                                        />
+                                    );
+                                })
+                            }
+                        </div>
+                    </Card>
+                )}
                 {resultHits?.length > 0 && !loading && <Pagination
                     currentPage={pageIndex}
                     onPageChange={(i) => {
