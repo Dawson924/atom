@@ -1,118 +1,58 @@
-import { ChangeEvent, useEffect, useState } from 'react';
-import { Card, Container, FormInput, List, RangeSlider } from '@renderer/components/commons';
-import { convertUnitsPrecise } from '@common/utils/byte';
-import { ConfigService, SystemService } from '@renderer/api';
-
-const convertByteToGB = (bytes: number) => convertUnitsPrecise(bytes, 'B', 'GB', 1024, 1);
-const convertGBToMB = (gigabytes: number) => convertUnitsPrecise(gigabytes, 'GB', 'MB', 1024, 0);
+import { ChangeEvent, useCallback } from 'react';
+import { Card, CircleSpinner, Container, FormInput, List, RangeSlider } from '@renderer/components/commons';
+import { useLaunchConfig } from '@renderer/hooks/config';
 
 export default function StartupPage() {
-    const [minecraftFolder, setMinecraftFolder] = useState<string>('');
-    const [javaPath, setJavaPath] = useState<string>('');
-    const [jvmArgs, setJvmArgs] = useState<string>('');
-    const [mcArgs, setMcArgs] = useState<string>('');
-    const [allocatedMemory, setAllocatedMemory] = useState<number>();
-    const [memoryUsage, setMemoryUsage] = useState<number>();
-    const [totalMemory, setTotalMemory] = useState<number>();
+    const { config, memory, loading, error, updateConfig } = useLaunchConfig();
 
-    useEffect(() => {
-        const loadConfig = async () => {
-            const [
-                minecraftFolder,
-                javaPath,
-                allocatedMemory,
-                jvmArgs,
-                mcArgs,
-                totalMemory,
-                memoryUsage,
-            ] = await Promise.all([
-                ConfigService.get('launch.minecraftFolder'),
-                ConfigService.get('launch.runtime.executable'),
-                ConfigService.get('launch.runtime.allocatedMemory'),
-                ConfigService.get('launch.extraArguments.jvm'),
-                ConfigService.get('launch.extraArguments.mc'),
-                SystemService.totalMemory(),
-                SystemService.memoryUsage(),
-            ]);
+    const handleFormChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        updateConfig({ [name]: value });
+    }, [updateConfig]);
 
-            // Validate initial values
-            const adjustedAllocated = convertUnitsPrecise(allocatedMemory, 'MB', 'GB');
-            const adjustedTotal = convertByteToGB(totalMemory);
-            const adjustedUsage = convertByteToGB(memoryUsage);
+    const handleMemoryChange = useCallback((value: string) => {
+        const newAllocated = parseFloat(value);
+        updateConfig({ allocatedMemory: newAllocated });
+    }, [updateConfig]);
 
-            setMinecraftFolder(minecraftFolder);
-            setJavaPath(javaPath);
-            setAllocatedMemory(adjustedAllocated);
-            setJvmArgs(jvmArgs);
-            setMcArgs(mcArgs);
-            setTotalMemory(adjustedTotal);
-            setMemoryUsage(adjustedUsage);
-        };
-
-        loadConfig();
-    }, []);
-
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            try {
-                const memoryUsageGB = convertByteToGB(await SystemService.memoryUsage());
-                setMemoryUsage(memoryUsageGB);
-            } catch (error) {
-                console.error('Failed to update memory usage:', error);
-            }
-        }, 1000); // 每秒更新一次
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        ConfigService.set(`launch.${e.target.name}`, value);
-    };
-
-    const changeAllocatedMemory = (e: ChangeEvent<HTMLInputElement>) => {
-        const newAllocated = parseFloat(e.target.value);
-        setAllocatedMemory(newAllocated);
-        ConfigService.set('launch.runtime.allocatedMemory', convertGBToMB(newAllocated));
-    };
+    if (loading) return <CircleSpinner text="Loading..." />;
+    if (error) return <div>{error}</div>;
 
     return (
         <Container>
-            <Card
-                title="Launch"
-                className="mb-6"
-            >
+            <Card title="Launch" className="mb-6">
                 <List className="space-y-2">
                     <FormInput
                         title="Minecraft Folder"
                         name="minecraftFolder"
-                        value={minecraftFolder}
-                        onChange={handleChange}
+                        value={config.minecraftFolder}
+                        onChange={handleFormChange}
                     />
                     <FormInput
                         title="Java Path"
-                        name="runtime.executable"
-                        value={javaPath}
-                        onChange={handleChange}
+                        name="javaPath"
+                        value={config.javaPath}
+                        onChange={handleFormChange}
                     />
                     <FormInput
                         title="JVM Arguments"
-                        name="extraArguments.jvm"
-                        value={jvmArgs}
-                        onChange={handleChange}
+                        name="jvmArgs"
+                        value={config.jvmArgs}
+                        onChange={handleFormChange}
                     />
                     <FormInput
                         title="MC Arguments"
-                        name="extraArguments.mc"
-                        value={mcArgs}
-                        onChange={handleChange}
+                        name="mcArgs"
+                        value={config.mcArgs}
+                        onChange={handleFormChange}
                     />
                 </List>
             </Card>
+
             <Card
                 title="Memory"
             >
-                {totalMemory && memoryUsage && allocatedMemory >= 0 &&
+                {memory.total && memory.usage && config.allocatedMemory >= 0 &&
                     <List>
                         {/* Allocated Memory Range Input */}
                         <div className="px-2 w-full h-8 flex flex-row space-x-3 items-center">
@@ -124,10 +64,10 @@ export default function StartupPage() {
                             <div className="flex flex-row items-center w-full min-w-80">
                                 <RangeSlider
                                     min={0}
-                                    max={totalMemory}
+                                    max={memory.total}
                                     step={0.1}
-                                    defaultValue={allocatedMemory}
-                                    onChange={changeAllocatedMemory}
+                                    defaultValue={config.allocatedMemory}
+                                    onChange={(e) => handleMemoryChange(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -138,7 +78,7 @@ export default function StartupPage() {
                                 {/* Memory used area */}
                                 <div
                                     style={{
-                                        width: `${(memoryUsage / totalMemory) * 100}%`,
+                                        width: `${(memory.usage / memory.total) * 100}%`,
                                         minWidth: '10%'
                                     }}
                                     className="relative h-1 shrink-0 transition-all duration-75 bg-blue-600"
@@ -148,10 +88,10 @@ export default function StartupPage() {
                                     </label>
                                     <label className="absolute -bottom-6 text-sm text-nowrap text-gray-800 dark:text-gray-400">
                                         {
-                                            memoryUsage / totalMemory > .10 ? (
-                                                `${memoryUsage} GB / ${totalMemory} GB`
+                                            memory.usage / memory.total > .10 ? (
+                                                `${memory.usage} GB / ${memory.total} GB`
                                             ) : (
-                                                `~ / ${totalMemory} GB`
+                                                `~ / ${memory.total} GB`
                                             )
                                         }
                                     </label>
@@ -162,15 +102,15 @@ export default function StartupPage() {
                                         Allocated Memory
                                     </label>
                                     <label className="absolute -bottom-6 text-sm text-nowrap text-gray-800 dark:text-gray-400">
-                                        {allocatedMemory} GB
-                                        {(allocatedMemory + memoryUsage) >= totalMemory &&
-                                            ` (${(totalMemory - memoryUsage).toFixed(1)} available)`}
+                                        {config.allocatedMemory} GB
+                                        {(config.allocatedMemory + memory.usage) >= memory.total &&
+                                            ` (${(memory.total - memory.usage).toFixed(1)} available)`}
                                     </label>
                                     <div
                                         className="absolute top-0 left-0 h-1 transition-all duration-75 bg-blue-300"
                                         style={{
                                             width: `${(() => {
-                                                const n = (allocatedMemory / (totalMemory - memoryUsage)) * 100;
+                                                const n = (config.allocatedMemory / (memory.total - memory.usage)) * 100;
                                                 return n >= 100 ? 100 : n;
                                             })()}%`
                                         }}
