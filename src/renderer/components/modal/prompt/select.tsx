@@ -36,11 +36,11 @@ function SelectPromptModal({
                     {/* Modal content */}
                     <div className="relative max-h-[400px] bg-white rounded-lg shadow-sm dark:bg-neutral-800">
                         {/* Modal header */}
-                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 dark:border-neutral-800">
+                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-neutral-200 dark:border-neutral-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
                             <button
                                 type="button"
-                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                className="text-gray-400 bg-transparent hover:bg-neutral-200 hover:text-neutral-900 rounded-lg text-sm h-8 w-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                 onClick={onClose}
                             >
                                 <svg
@@ -71,7 +71,7 @@ function SelectPromptModal({
                                     return (
                                         <li key={item.label} className="cursor-pointer">
                                             <button
-                                                className="flex items-center p-3 w-full text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-neutral-700 dark:hover:bg-neutral-500 dark:text-white cursor-pointer"
+                                                className="flex items-center p-3 w-full text-base font-bold text-gray-900 rounded-lg bg-neutral-50 hover:bg-neutral-100 group hover:shadow dark:bg-neutral-700 dark:hover:bg-neutral-500 dark:text-white cursor-pointer"
                                                 onClick={() => handleSelect(item.onSelect)}
                                             >
                                                 {item.icon ? item.icon : null}
