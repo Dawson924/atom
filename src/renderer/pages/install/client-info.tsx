@@ -16,8 +16,8 @@ export default function ClientInfoPage({ version }: {
     if (!version) return null;
 
     const { goTo } = useInstallPage(state => state);
-    const { taskState, executeTask } = useTask();
     const { addToast } = useToast();
+    const { executeTask, currentTask } = useTask();
 
     const [versionName, setVersionName] = useState<string>(version);
     const [modLoader, setModLoader] = useState<{ loader: 'forge' | 'fabric' | 'neoForge'; version: string }>();
@@ -127,7 +127,7 @@ export default function ClientInfoPage({ version }: {
                     })}
                 </Accordion>
 
-                <div style={{ display: taskState && 'none' }} className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
+                <div style={{ display: currentTask && 'none' }} className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
                     <button
                         className="px-5 py-2 w-40 flex flex-row gap-2 justify-center items-center font-light text-white rounded-full bg-blue-600 hover:bg-blue-500 transition-all cursor-pointer"
                         onClick={executeDownload}
