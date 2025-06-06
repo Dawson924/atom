@@ -120,10 +120,7 @@ const routes = [
             </svg>
         ),
         element: <SettingsPage />
-    }
-];
-
-const backgroundRoutes = [
+    },
     {
         path: 'task',
         element: <TaskPage />
@@ -271,6 +268,9 @@ export default function Page(): React.JSX.Element {
                             indicatorColor="primary"
                         >
                             {path.split('/').filter(Boolean).length === 1 && routes.map(route => {
+                                if (!route?.label)
+                                    return;
+
                                 return (
                                     <Tab
                                         value={route.path}
@@ -288,7 +288,7 @@ export default function Page(): React.JSX.Element {
             </div>
 
             <main className="h-main overflow-hidden">
-                <RouteProvider routes={[...routes, ...backgroundRoutes]} path={path} setPath={setPath} />
+                <RouteProvider routes={routes} path={path} setPath={setPath} />
             </main>
         </div>
     );

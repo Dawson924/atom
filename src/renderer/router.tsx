@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface Route {
@@ -21,9 +22,9 @@ const RouteProvider = ({ routes, path, setPath }: {
     const navigate = (path?: string) => {
         if (path) {
             const [segments, params] = parseRoute(path);
-
             const target = matchRoute(segments, routes);
-            target.params = params;
+
+            _.set(target, 'params', params);
             if (target) {
                 setPath(segments.join('/'));
                 setPage(target);
