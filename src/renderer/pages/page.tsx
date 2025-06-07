@@ -150,10 +150,10 @@ export default function Page(): React.JSX.Element {
     return (
         <div
             id="window"
-            className="antialiased font-[Inter] select-none rounded-xs border-2 dark:border border-gray-200 dark:border-neutral-800"
+            className="antialiased font-[Inter] select-none border border-neutral-200 dark:border-neutral-900"
             style={{ backgroundColor: (theme === 'light') ? '#ffffff' : '#121212' }}
         >
-            <div className="title-bar">
+            <div className="title-bar h-[80px]">
                 <header className="header" style={{ backgroundColor: (theme === 'light') ? '#e1e1e1' : '#252423' }}>
                     <div className="header-left">
                     </div>

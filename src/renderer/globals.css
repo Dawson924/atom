@@ -129,7 +129,7 @@ body {
 }
 
 .h-main {
-    height: calc(100vh - (32px + 48px));
+    height: calc(100vh - (32px + 48px) - (2px));
 }
 
 /* 适用于Webkit浏览器(Chrome, Safari, Edge等) */
