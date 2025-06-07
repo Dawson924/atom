@@ -14,7 +14,7 @@ export default function InstallerPage() {
                 <div className="z-10 w-32 h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
                     <div className="w-full h-full">
                         {/* Minecraft Section */}
-                        <div className="px-5 pt-3">
+                        <div className="px-4 pt-2">
                             <h2 className="text-xs tracking-tighter uppercase text-neutral-400">
                                 Minecraft
                             </h2>
@@ -33,7 +33,7 @@ export default function InstallerPage() {
                         </nav>
 
                         {/* Community Resource */}
-                        <div className="px-5 pt-3">
+                        <div className="px-4 pt-4">
                             <h2 className="text-xs tracking-tighter uppercase text-neutral-400">
                                 Community
                             </h2>
