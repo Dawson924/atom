@@ -1,7 +1,7 @@
 import { ModrinthV2Client, SearchResultHit } from '@xmcl/modrinth';
 import { ChangeEvent, UIEvent, useEffect, useRef, useState } from 'react';
 import { Card, CircleSpinner, Form, Input, ListItem, Pagination, ScrollMemoryContainer, Select } from '@renderer/components/commons';
-import ModInfoPage from './mod-info';
+import { ModrinthDetail } from './detail';
 import { useInstallPage } from '@renderer/hooks/store';
 
 type ModSearchFormData = {
@@ -15,7 +15,7 @@ const DEBOUNCE_DELAY = 300;
 
 const client = new ModrinthV2Client();
 
-export default function ModsPage() {
+export function ModrinthSearch() {
     const { goTo, cacheMap } = useInstallPage();
 
     const [formData, setFormData] = useState<ModSearchFormData>({
@@ -205,7 +205,7 @@ export default function ModsPage() {
                                             description={hit.description}
                                             onClick={async () => {
                                                 cacheMap.set('hits', resultHits);
-                                                goTo(<ModInfoPage project={await client.getProject(hit.project_id)} hit={hit} />);
+                                                goTo(<ModrinthDetail project={await client.getProject(hit.project_id)} hit={hit} />);
                                             }}
                                         />
                                     );

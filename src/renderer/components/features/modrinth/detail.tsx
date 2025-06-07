@@ -15,7 +15,7 @@ type Dependencies = Array<{ version_id: string | null; project_id: string; depen
 
 const client = new ModrinthV2Client();
 
-export default function ModInfoPage(props: { project: Project, hit: SearchResultHit }) {
+export function ModrinthDetail(props: { project: Project, hit: SearchResultHit }) {
     const { goTo } = useInstallPage();
     const { versions } = useClient();
     const { addToast } = useToast();
@@ -129,7 +129,7 @@ export default function ModInfoPage(props: { project: Project, hit: SearchResult
             >
                 <button
                     className="size-6 flex cursor-pointer"
-                    onClick={() => goTo('mods')}
+                    onClick={() => goTo('modrinth')}
                 >
                     <svg className="w-full h-full text-gray-700 dark:text-gray-50" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <g id="SVGRepo_bgCarrier" strokeWidth={0} />

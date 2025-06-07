@@ -1,15 +1,14 @@
-import MinecraftIcon from '../../assets/images/minecraft/grass_block.png';
-import CommandBlock from '../../assets/images/minecraft/command_block.png';
-
+import MinecraftIcon from '../../../assets/images/minecraft/grass_block.png';
+import CommandBlock from '../../../assets/images/minecraft/command_block.png';
 import { useEffect, useState } from 'react';
 import { MinecraftVersion, MinecraftVersionList } from '@xmcl/installer';
-import { toUTCStringPretty } from '../../../common/utils/date';
+import { toUTCStringPretty } from '@common/utils/date';
 import { Accordion, Card, Container, List, ListItem } from '@renderer/components/commons';
-import ClientInfoPage from './client-info';
+import { ClientVersionDetail } from './detail';
 import { ClientService } from '@renderer/api';
 import { useInstallPage } from '@renderer/hooks/store';
 
-export default function ClientPage() {
+export function ClientVersionList() {
     const { goTo } = useInstallPage(state => state);
 
     const [versionList, setVersionList] = useState<MinecraftVersionList>();
@@ -42,13 +41,13 @@ export default function ClientPage() {
                             src={MinecraftIcon}
                             title={versionList.latest.release}
                             description={`Release version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.release).releaseTime)}`}
-                            onClick={() => goTo(<ClientInfoPage version={versionList.latest.release} />)}
+                            onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
                         />
                         <ListItem
                             src={CommandBlock}
                             title={versionList.latest.snapshot}
                             description={`Snapshot version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.snapshot).releaseTime)}`}
-                            onClick={() => goTo(<ClientInfoPage version={versionList.latest.release} />)}
+                            onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
                         />
                     </List>
                 </Card>
@@ -66,7 +65,7 @@ export default function ClientPage() {
                                 src={MinecraftIcon}
                                 title={version.id}
                                 description={toUTCStringPretty(version.releaseTime)}
-                                onClick={() => goTo(<ClientInfoPage version={version.id} />)}
+                                onClick={() => goTo(<ClientVersionDetail version={version.id} />)}
                             />
                         );
                     })}

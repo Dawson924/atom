@@ -1,16 +1,15 @@
+import MinecraftIcon from '../../../assets/images/minecraft/grass_block.png';
+import FabricIcon from '../../../assets/images/minecraft/fabric.png';
 import { useEffect, useState } from 'react';
 import { Accordion, Container, Input, ListItem } from '@renderer/components/commons';
 import { FabricArtifactVersion } from '@xmcl/installer';
-import MinecraftIcon from '../../assets/images/minecraft/grass_block.png';
-import FabricIcon from '../../assets/images/minecraft/fabric.png';
 import { Fab } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import { useToast } from '@renderer/components/toast';
 import { ClientService } from '@renderer/api';
 import { useInstallPage, useTask } from '@renderer/hooks/store';
 
-
-export default function ClientInfoPage({ version }: {
+export function ClientVersionDetail({ version }: {
     version: string;
 }) {
     if (!version) return null;

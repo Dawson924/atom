@@ -1,9 +1,8 @@
-import ClientPage from './client';
-import ServerPage from './server';
-import ModsPage from './mods';
+import { ModrinthSearch } from '../../components/features/modrinth';
 import { useInstallPage } from '@renderer/hooks/store';
-import { TaskFloatingButton } from '@renderer/components/features/task/fab';
-
+import { TaskFloatingButton } from '@renderer/components/features/task';
+import { ClientVersionList } from '@renderer/components/features/client';
+import { ServerVersionList } from '@renderer/components/features/server';
 
 export default function InstallerPage() {
     const { currentPage, goTo } = useInstallPage();
@@ -15,8 +14,8 @@ export default function InstallerPage() {
                 <div className="z-10 w-32 h-main flex flex-shrink-0 flex-col shadow-lg border-r border-gray-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
                     <div className="w-full h-full">
                         {/* Minecraft Section */}
-                        <div className="px-5 pt-3 mb-1">
-                            <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-neutral-400">
+                        <div className="px-5 pt-3">
+                            <h2 className="text-xs tracking-tighter uppercase text-neutral-400">
                                 Minecraft
                             </h2>
                         </div>
@@ -34,14 +33,14 @@ export default function InstallerPage() {
                         </nav>
 
                         {/* Community Resource */}
-                        <div className="px-5 pt-3 mb-1">
-                            <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-neutral-400">
+                        <div className="px-5 pt-3">
+                            <h2 className="text-xs tracking-tighter uppercase text-neutral-400">
                                 Community
                             </h2>
                         </div>
                         <nav aria-label="Main" className="flex flex-col justify-start items-start">
                             {
-                                ['mods'].map(item => {
+                                ['modrinth'].map(item => {
                                     return (
                                         item === currentPage ?
                                             <SelectedItem key={item} value={item} />
@@ -56,11 +55,11 @@ export default function InstallerPage() {
 
                 {typeof currentPage === 'string' ? (
                     currentPage === 'client' ? (
-                        <ClientPage />
+                        <ClientVersionList />
                     ) : currentPage === 'server' ? (
-                        <ServerPage />
-                    ) : currentPage === 'mods' ? (
-                        <ModsPage />
+                        <ServerVersionList />
+                    ) : currentPage === 'modrinth' ? (
+                        <ModrinthSearch />
                     ) : null
                 ) : currentPage || null}
 
