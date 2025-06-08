@@ -77,8 +77,8 @@ const Accordion: React.FC<
                         onClick={onClick}
                     >
                         <div className="space-x-6 flex flex-row justify-start items-center">
-                            <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
-                            <span className="text-sm text-gray-500">{description}</span>
+                            <h2 className="text-xs font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+                            <span className="text-xs text-gray-500">{description}</span>
                         </div>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
