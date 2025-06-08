@@ -54,12 +54,13 @@ function InputModal({
                         <form>
                             <div className="grid gap-4 mb-7.5 sm:grid-cols-2">
                                 <div className="col-span-2">
+                                    {name &&
                                     <label
                                         htmlFor="name"
                                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                     >
-                                        {name || 'Value'}
-                                    </label>
+                                        {name}
+                                    </label>}
                                     <Input
                                         type="text"
                                         id="name"
