@@ -32,14 +32,18 @@ export class ClientService {
         return data(await VersionUtils.listVersions(this.minecraftFolder));
     }
 
-    async fetchVersionManifest() {
+    async hasVersion(_: IpcMainEvent, id: string) {
+        return data(await VersionUtils.exists(this.minecraftFolder, id));
+    }
+
+    async getVersionManifest() {
         if (!this.versionManifest)
             this.versionManifest = await getVersionList();
 
         return data(this.versionManifest);
     }
 
-    async fetchFabricArtifact() {
+    async getFabricArtifact() {
         if (!this.fabricArtifacts)
             this.fabricArtifacts = await getFabricLoaders();
 

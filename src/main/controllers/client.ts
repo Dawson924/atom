@@ -7,18 +7,19 @@ export class ClientServiceController extends IPCServiceController {
     protected clientService: ClientService;
 
     protected override async registerHandlers() {
-        const clientService = new ClientService();
+        const service = new ClientService();
 
-        this.handle('folder', clientService.getFolder.bind(clientService));
-        this.handle('get-path', clientService.getPath.bind(clientService));
-        this.handle('get-versions', clientService.getVersions.bind(clientService));
-        this.handle('get-version-manifest', clientService.fetchVersionManifest.bind(clientService));
-        this.handle('get-fabric-artifacts', clientService.fetchFabricArtifact.bind(clientService));
-        this.handle('find-java', clientService.findJava.bind(clientService));
-        this.handle('install', clientService.install.bind(clientService));
-        this.handle('install-fabric', clientService.installFabric.bind(clientService));
-        this.handle('download-file', clientService.downloadFile.bind(clientService));
-        this.handle('launch', clientService.launch.bind(clientService));
+        this.handle('folder', service.getFolder.bind(service));
+        this.handle('get-path', service.getPath.bind(service));
+        this.handle('get-versions', service.getVersions.bind(service));
+        this.handle('has-version', service.hasVersion.bind(service));
+        this.handle('get-version-manifest', service.getVersionManifest.bind(service));
+        this.handle('get-fabric-artifacts', service.getFabricArtifact.bind(service));
+        this.handle('find-java', service.findJava.bind(service));
+        this.handle('install', service.install.bind(service));
+        this.handle('install-fabric', service.installFabric.bind(service));
+        this.handle('download-file', service.downloadFile.bind(service));
+        this.handle('launch', service.launch.bind(service));
     }
 
     constructor(ipc: IPCService) {

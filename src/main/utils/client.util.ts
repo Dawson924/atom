@@ -136,7 +136,19 @@ export const VersionUtils = {
                 }
             })
         ).then(list => list.filter(Boolean));
-    }
+    },
+
+    // 检查版本是否存在
+    exists: async (folder: MinecraftFolder, id: string): Promise<boolean> => {
+        const versions = await readdir(folder.versions);
+        return new Promise((ok) => {
+            versions.forEach(version => {
+                if (version === id)
+                    ok(true);
+            });
+            ok(false);
+        });
+    },
 };
 
 // 配置文件操作
