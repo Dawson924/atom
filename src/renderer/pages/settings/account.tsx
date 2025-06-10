@@ -260,11 +260,11 @@ export default function AccountPage() {
                                     </div>
                                     <div className="w-full">
                                         <div
-                                            className={`relative rounded-full w-12 h-6 transition duration-200 ease-linear ${autoRotate ? 'bg-blue-600 dark:bg-blue-500' : 'bg-neutral-300 dark:bg-neutral-700'}`}
+                                            className={`relative rounded-full w-12 h-6 transition duration-200 ease-linear ${autoRotate ? 'bg-blue-500 dark:bg-blue-400' : 'bg-neutral-300 dark:bg-neutral-700'}`}
                                         >
                                             <label
                                                 htmlFor="autoRotate"
-                                                className={`absolute left-0 bg-white dark:bg-neutral-800 border-2 mb-2 w-6 h-6 rounded-full transition transform duration-100 ease-linear cursor-pointer ${autoRotate ? 'translate-x-full border-blue-500' : 'translate-x-0 border-neutral-300 dark:border-neutral-700'}`}
+                                                className={`absolute left-0 bg-white dark:bg-neutral-800 border-2 mb-2 w-6 h-6 rounded-full transition transform duration-100 ease-linear cursor-pointer ${autoRotate ? 'translate-x-full border-blue-500 dark:border-blue-400' : 'translate-x-0 border-neutral-300 dark:border-neutral-700'}`}
                                             />
                                             <input
                                                 type="checkbox"
