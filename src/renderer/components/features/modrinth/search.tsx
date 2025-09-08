@@ -3,6 +3,8 @@ import { ChangeEvent, UIEvent, useEffect, useRef, useState } from 'react';
 import { Card, CircleSpinner, Form, Input, ListItem, Pagination, ScrollMemoryContainer, Select } from '@renderer/components/commons';
 import { ModrinthDetail } from './detail';
 import { useInstallPage } from '@renderer/hooks/store';
+import { useTranslation } from 'react-i18next';
+import { Motion } from '@renderer/components/animation';
 
 type ModSearchFormData = {
     name: string;
@@ -17,6 +19,7 @@ const client = new ModrinthV2Client();
 
 export function ModrinthSearch() {
     const { goTo, cacheMap } = useInstallPage();
+    const { t } = useTranslation();
 
     const [formData, setFormData] = useState<ModSearchFormData>({
         name: cacheMap.get('search') || '',
@@ -57,7 +60,7 @@ export function ModrinthSearch() {
         setLoading(true);
         client.searchProjects({
             query: formData.name,
-            index: formData.name ? formData.index : 'downloads',
+            index: formData.index,
             facets: JSON.stringify([[`project_type=${formData.type}`]])
         }).then(res => {
             if (res.hits.length === 0) {
@@ -123,96 +126,96 @@ export function ModrinthSearch() {
                 contentLoaded={(resultHits.length !== 0)}
                 defaultPosition={cacheMap.get('scrollTop')}
             >
-                <Card
-                    title="Search for mods"
-                    className="mb-5 animate-[slide-down_0.2s_ease-in]"
-                >
-                    <Form onSubmit={(e) => {
-                        e.preventDefault();
-                        searchMods();
-                    }}>
-                        <div className="px-4 grid grid-cols-4 lg:grid-cols-5 gap-1.5">
-                            <div className="px-2 w-full h-9.5 col-span-2 lg:col-span-3 flex flex-row space-x-3 items-center">
-                                <div className="w-14 shrink-0">
-                                    <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
-                                        Name
-                                    </h3>
+                <Motion animation="animate-[slide-down_0.1s_ease-in]">
+                    <Card
+                        title={t('modrinth.search_title')}
+                        className="mb-5"
+                    >
+                        <Form onSubmit={(e) => {
+                            e.preventDefault();
+                            searchMods();
+                        }}>
+                            <div className="px-4 grid grid-cols-4 lg:grid-cols-5 gap-1.5">
+                                <div className="w-full h-9.5 col-span-2 lg:col-span-3 flex flex-row space-x-3 items-center">
+                                    <div className="w-full">
+                                        <Input
+                                            name="name"
+                                            defaultValue={formData.name}
+                                            onChange={handleChange}
+                                            placeholder={t('modrinth.search_placeholder')}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="w-full">
-                                    <Input
-                                        name="name"
-                                        defaultValue={formData.name}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-                            <div className="px-2 w-full h-9.5 col-span-2 flex flex-row space-x-3 items-center">
-                                <div className="w-14 shrink-0">
-                                    <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
-                                        Sort by
-                                    </h3>
-                                </div>
-                                <div className="relative w-full items-center">
-                                    <Select
-                                        name="index"
-                                        defaultValue={formData.index}
-                                        onChange={handleChange}
-                                        options={[
-                                            { label: 'Relevance', value: 'relevance' },
-                                            { label: 'Downloads', value: 'downloads' }
-                                        ]}
-                                    />
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                                    </svg>
-                                </div>
-                                <div className="relative w-full items-center">
-                                    <Select
-                                        name="type"
-                                        defaultValue={formData.type}
-                                        onChange={handleChange}
-                                        options={[
-                                            { label: 'Mod', value: 'mod' },
-                                            { label: 'Shader', value: 'shader' },
-                                            { label: 'Resource Pack', value: 'resourcepack' },
-                                            { label: 'Plugin', value: 'plugin' },
-                                            { label: 'Datapack', value: 'datapack' },
-                                        ]}
-                                    />
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                                    </svg>
+                                <div className="pl-4 lg:pl-6 w-full h-9.5 col-span-2 flex flex-row space-x-2 items-center">
+                                    <div className="max-lg:hidden shrink-0">
+                                        <h3 className="mr-1.5 text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">
+                                            {t('modrinth.search_sort')}
+                                        </h3>
+                                    </div>
+                                    <div className="relative w-full items-center">
+                                        <Select
+                                            name="index"
+                                            defaultValue={formData.index}
+                                            onChange={handleChange}
+                                            options={[
+                                                { label: t('modrinth.index.relevance'), value: 'relevance' },
+                                                { label: t('modrinth.index.downloads'), value: 'downloads' }
+                                            ]}
+                                        />
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                        </svg>
+                                    </div>
+                                    <div className="relative w-full items-center">
+                                        <Select
+                                            name="type"
+                                            defaultValue={formData.type}
+                                            onChange={handleChange}
+                                            options={[
+                                                { label: t('modrinth.mod'), value: 'mod' },
+                                                { label: t('modrinth.shader'), value: 'shader' },
+                                                { label: t('modrinth.resourcepack'), value: 'resourcepack' },
+                                                { label: t('modrinth.plugin'), value: 'plugin' },
+                                                { label: t('modrinth.datapack'), value: 'datapack' },
+                                            ]}
+                                        />
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.2" stroke="currentColor" className="size-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Form>
-                </Card>
+                        </Form>
+                    </Card>
+                </Motion>
                 {loading ? (
                     <CircleSpinner text="Loading mods..." />
                 ) : resultHits.length === 0 ? (
                     <div className="text-center py-8 text-gray-600 dark:text-gray-400">No versions available</div>
                 ) : (
-                    <Card className="px-1 py-3 animate-[slide-down_0.4s_ease-in]">
-                        <div className="flex flex-col px-2">
-                            {
-                                resultHits.map(hit => {
-                                    return (
-                                        <ListItem
-                                            key={hit.title}
-                                            src={hit.icon_url}
-                                            variant="standard"
-                                            title={hit.title}
-                                            description={hit.description}
-                                            onClick={async () => {
-                                                cacheMap.set('hits', resultHits);
-                                                goTo(<ModrinthDetail project={await client.getProject(hit.project_id)} hit={hit} />);
-                                            }}
-                                        />
-                                    );
-                                })
-                            }
-                        </div>
-                    </Card>
+                    <Motion animation="animate-[slide-down_0.4s_ease-in]">
+                        <Card className="px-1 py-3">
+                            <div className="flex flex-col px-2">
+                                {
+                                    resultHits.map(hit => {
+                                        return (
+                                            <ListItem
+                                                key={hit.title}
+                                                src={hit.icon_url}
+                                                variant="standard"
+                                                title={hit.title}
+                                                description={hit.description}
+                                                onClick={async () => {
+                                                    cacheMap.set('hits', resultHits);
+                                                    goTo(<ModrinthDetail project={await client.getProject(hit.project_id)} hit={hit} />);
+                                                }}
+                                            />
+                                        );
+                                    })
+                                }
+                            </div>
+                        </Card>
+                    </Motion>
                 )}
                 {resultHits?.length > 0 && !loading && <Pagination
                     currentPage={pageIndex}

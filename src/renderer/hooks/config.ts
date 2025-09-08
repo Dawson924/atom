@@ -1,18 +1,23 @@
 import { convertUnitsPrecise } from '@common/utils/byte';
 import { ConfigService, SystemService } from '@renderer/api';
-import { debounce } from 'lodash';
+import { debounce, set } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 
-type WindowSize = { width: number; height: number };
-
 export type ConfigState = {
+    language: string;
     theme: string;
-    windowTitle: string;
-    windowSize: WindowSize;
+    window: {
+        title: string,
+        size: {
+            width: number,
+            height: number
+        }
+    },
+    animation: { effect: boolean }
 };
 
 // 自定义 Hook 管理配置
-export const useAppearance = () => {
+export const useAppearanceConfig = () => {
     const [config, setConfig] = useState<ConfigState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,12 +26,13 @@ export const useAppearance = () => {
     const loadConfig = useCallback(async () => {
         try {
             setLoading(true);
-            const [theme, windowTitle, windowSize] = await Promise.all([
+            const [language, theme, window, animation] = await Promise.all([
+                ConfigService.get('appearance.language'),
                 ConfigService.get('appearance.theme'),
-                ConfigService.get('appearance.windowTitle'),
-                ConfigService.get('appearance.windowSize')
+                ConfigService.get('appearance.window'),
+                ConfigService.get('appearance.animation'),
             ]);
-            setConfig({ theme, windowTitle, windowSize });
+            setConfig({ language, theme, window, animation });
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -36,10 +42,15 @@ export const useAppearance = () => {
 
     // 更新配置
     const updateConfig = useCallback(
-        async (key: keyof ConfigState, value: any) => {
+        async (key: keyof ConfigState | string, value: any) => {
             try {
                 await ConfigService.set(`appearance.${key}`, value);
-                setConfig(prev => prev ? { ...prev, [key]: value } : { [key]: value } as ConfigState);
+                setConfig(prev => {
+                    if (!prev) return null;
+                    const newConfig = { ...prev };
+                    set(newConfig, key, value);
+                    return newConfig;
+                });
             } catch (err) {
                 setError((err as Error).message);
             }
@@ -100,7 +111,7 @@ export const useLaunchConfig = () => {
                 totalMemoryBytes,
                 memoryUsageBytes,
             ] = await Promise.all([
-                ConfigService.get<string>('launch.minecraftFolder'),
+                ConfigService.get<string>('launch.folder'),
                 ConfigService.get<string>('launch.runtime.executable'),
                 ConfigService.get<number>('launch.runtime.allocatedMemory'),
                 ConfigService.get<string>('launch.extraArguments.jvm'),

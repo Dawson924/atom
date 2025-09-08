@@ -7,9 +7,12 @@ import { truncateWithEllipsis } from '../../../../common/utils/string';
 import { useNavigate } from '../../../router';
 import { Card, Container, List } from '@renderer/components/commons';
 import { ClientService, ConfigService } from '@renderer/api';
+import { useTranslation } from 'react-i18next';
+import { Motion } from '@renderer/components/animation';
 
 export default function VersionsPage() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [folder, setFolder] = useState<MinecraftFolder>();
     const [versions, setLocalVersions] = useState<ResolvedVersion[]>();
@@ -29,7 +32,7 @@ export default function VersionsPage() {
                     <div className="w-full h-full">
                         <div className="px-5 pt-3 mb-1">
                             <h2 className="text-xs font-semibold font-[Inter] tracking-tighter uppercase text-gray-400">
-                                Folders
+                                {t('label.folders')}
                             </h2>
                         </div>
                         <nav aria-label="Main" className="flex flex-col h-full">
@@ -51,71 +54,74 @@ export default function VersionsPage() {
 
                 <Container>
                     {versions.some(ver => ver.mainClass==='net.minecraft.client.main.Main') &&
-                    <Card
-                        title="Minecraft"
-                        className="mb-6 animate-[slide-down_0.1s_ease-in]"
-                    >
-                        <List>
-                            {
-                                versions?.map((version: ResolvedVersion) => {
-                                    if (version.mainClass === 'net.minecraft.client.main.Main')
-                                        return (
-                                            <div
-                                                key={version.id}
-                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
-                                                onClick={() => {
-                                                    ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
-                                                }}
-                                            >
-                                                <div className="w-8 h-8 flex-shrink-0">
-                                                    <img
-                                                        src={MinecraftIcon}
-                                                        className="w-full h-full"
-                                                    />
+                    <Motion animation="animate-[slide-down_0.2s_ease-in]">
+                        <Card
+                            title="Minecraft"
+                            className="mb-6"
+                        >
+                            <List>
+                                {
+                                    versions?.map((version: ResolvedVersion) => {
+                                        if (version.mainClass === 'net.minecraft.client.main.Main')
+                                            return (
+                                                <div
+                                                    key={version.id}
+                                                    className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
+                                                    onClick={() => {
+                                                        ConfigService.set('launch.version', version.id).then(() => navigate('home'));
+                                                    }}
+                                                >
+                                                    <div className="w-8 h-8 flex-shrink-0">
+                                                        <img
+                                                            src={MinecraftIcon}
+                                                            className="w-full h-full"
+                                                        />
+                                                    </div>
+                                                    <div className="w-full h-full flex flex-col items-start justify-center">
+                                                        <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
+                                                        <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="w-full h-full flex flex-col items-start justify-center">
-                                                    <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
-                                                    <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                })
-                            }
-                        </List>
-                    </Card>}
+                                            );
+                                    })
+                                }
+                            </List>
+                        </Card>
+                    </Motion>}
                     {versions.some(ver => ver.mainClass==='net.fabricmc.loader.impl.launch.knot.KnotClient') &&
-                    <Card
-                        title="Fabric"
-                        className="mb-6 animate-[slide-down_0.3s_ease-in]"
-                    >
-                        <List>
-                            {
-                                versions?.map((version: ResolvedVersion) => {
-                                    if (version.mainClass === 'net.fabricmc.loader.impl.launch.knot.KnotClient')
-                                        return (
-                                            <div
-                                                key={version.id}
-                                                className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
-                                                onClick={() => {
-                                                    ConfigService.set('launch.launchVersion', version.id).then(() => navigate('home'));
-                                                }}
-                                            >
-                                                <div className="w-8 h-8 flex-shrink-0">
-                                                    <img
-                                                        src={FabricIcon}
-                                                        className="w-full h-full"
-                                                    />
+                    <Motion animation="animate-[slide-down_0.4s_ease-in]">
+                        <Card
+                            title="Fabric"
+                        >
+                            <List>
+                                {
+                                    versions?.map((version: ResolvedVersion) => {
+                                        if (version.mainClass === 'net.fabricmc.loader.impl.launch.knot.KnotClient')
+                                            return (
+                                                <div
+                                                    key={version.id}
+                                                    className="px-3 w-full h-12 flex flex-row space-x-3 items-center cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all"
+                                                    onClick={() => {
+                                                        ConfigService.set('launch.version', version.id).then(() => navigate('home'));
+                                                    }}
+                                                >
+                                                    <div className="w-8 h-8 flex-shrink-0">
+                                                        <img
+                                                            src={FabricIcon}
+                                                            className="w-full h-full"
+                                                        />
+                                                    </div>
+                                                    <div className="w-full h-full flex flex-col items-start justify-center">
+                                                        <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
+                                                        <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="w-full h-full flex flex-col items-start justify-center">
-                                                    <p className="text-sm font-light text-gray-900 dark:text-gray-50">{version.id}</p>
-                                                    <p className="text-xs text-gray-400">{version.minecraftVersion}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                })
-                            }
-                        </List>
-                    </Card>}
+                                            );
+                                    })
+                                }
+                            </List>
+                        </Card>
+                    </Motion>}
                 </Container>
 
             </div>

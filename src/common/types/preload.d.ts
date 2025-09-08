@@ -13,6 +13,7 @@ export interface ContextWindow {
         removeListeners: (channel: string) => void,
     },
     app: {
+        isPackaged: () => Promise<boolean>,
         close: () => void,
         minimize: () => void,
         maximize: () => void,

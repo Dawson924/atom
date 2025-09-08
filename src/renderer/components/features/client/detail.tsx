@@ -8,6 +8,8 @@ import { Delete } from '@mui/icons-material';
 import { useToast } from '@renderer/components/toast';
 import { ClientService } from '@renderer/api';
 import { useInstallPage, useTask } from '@renderer/hooks/store';
+import { useTranslation } from 'react-i18next';
+import { Motion } from '@renderer/components/animation';
 
 export function ClientVersionDetail({ version }: {
     version: string;
@@ -17,11 +19,12 @@ export function ClientVersionDetail({ version }: {
     const { goTo } = useInstallPage(state => state);
     const { addToast } = useToast();
     const { executeTask, currentTask } = useTask();
+    const { t } = useTranslation();
 
     const [versionName, setVersionName] = useState<string>(version);
     const [modLoader, setModLoader] = useState<{ loader: 'forge' | 'fabric' | 'neoForge'; version: string }>();
     const [fabricArtifacts, setFabricArtifacts] = useState<FabricArtifactVersion[]>();
-    const [fabricExpanded, setFabricExpanded] = useState(false);
+    const [expanded, setExpanded] = useState<string>();
 
     useEffect(() => {
         ClientService.getFabricArtifacts().then(setFabricArtifacts);
@@ -29,6 +32,10 @@ export function ClientVersionDetail({ version }: {
 
     const executeDownload = async () => {
         if (!version || !versionName) return;
+        if (await ClientService.hasVersion(versionName)) {
+            addToast(t('message.version_exists'), 'error');
+            return;
+        }
         goTo('client');
         if (!modLoader) {
             await installMinecraft();
@@ -61,70 +68,73 @@ export function ClientVersionDetail({ version }: {
     return (
         <>
             <Container>
-                <div className="px-4 py-2 mb-8 space-x-2 flex items-center shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800 animate-[slide-down_0.1s_ease-in]">
-                    <button
-                        className="size-8 cursor-pointer"
-                        onClick={() => goTo('client')}
-                    >
-                        <svg className="w-5 h-5 text-gray-700 dark:text-gray-50" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                            <g id="SVGRepo_iconCarrier">
-                                <path
-                                    fillRule="evenodd"
-                                    clipRule="evenodd"
-                                    d="M6.3508 12.7499L11.2096 17.4615L10.1654 18.5383L3.42264 11.9999L10.1654 5.46148L11.2096 6.53833L6.3508 11.2499L21 11.2499L21 12.7499L6.3508 12.7499Z"
-                                />
-                            </g>
-                        </svg>
-                    </button>
-                    <div className="size-8 flex-shrink-0">
-                        <img
-                            src={modLoader && modLoader.loader === 'fabric' ?
-                                FabricIcon
-                                :
-                                MinecraftIcon
-                            }
-                            className="w-full h-full"
-                        />
-                    </div>
-                    <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
-                        <div className="w-full min-w-80">
-                            <Input
-                                defaultValue={versionName}
-                                onChange={({ target: { value } }) => setVersionName(value)}
+                <Motion animation="animate-[slide-down_0.1s_ease-in]">
+                    <div className="px-4 py-2 mb-8 space-x-2 flex items-center shadow-md rounded-lg bg-neutral-50 dark:bg-neutral-800">
+                        <button
+                            className="size-8 cursor-pointer"
+                            onClick={() => goTo('client')}
+                        >
+                            <svg className="w-5 h-5 text-gray-700 dark:text-gray-50" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" strokeWidth={0} />
+                                <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
+                                <g id="SVGRepo_iconCarrier">
+                                    <path
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
+                                        d="M6.3508 12.7499L11.2096 17.4615L10.1654 18.5383L3.42264 11.9999L10.1654 5.46148L11.2096 6.53833L6.3508 11.2499L21 11.2499L21 12.7499L6.3508 12.7499Z"
+                                    />
+                                </g>
+                            </svg>
+                        </button>
+                        <div className="size-8 flex-shrink-0">
+                            <img
+                                src={modLoader && modLoader.loader === 'fabric' ?
+                                    FabricIcon
+                                    :
+                                    MinecraftIcon
+                                }
+                                className="w-full h-full"
                             />
                         </div>
+                        <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
+                            <div className="w-full min-w-80">
+                                <Input
+                                    defaultValue={versionName}
+                                    onChange={({ target: { value } }) => setVersionName(value)}
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </Motion>
 
-                <Accordion
-                    open={fabricExpanded}
-                    title="Fabric"
-                    description={
-                        modLoader && modLoader.loader === 'fabric' ?
-                            modLoader.version
-                            :
-                            'Choose a version'
-                    }
-                    className="mb-6 animate-[slide-down_0.4s_ease-in]"
-                    onClick={() => setFabricExpanded(pre => !pre)}
-                >
-                    {fabricArtifacts.map((artifact, i) => {
-                        if (i >= 19) return;
-                        return (
-                            <ListItem
-                                src={FabricIcon}
-                                title={artifact.version}
-                                description={artifact.stable ? 'Stable' : 'Experimental'}
-                                onClick={() => {
-                                    setModLoader({ loader: 'fabric', version: artifact.version });
-                                    setFabricExpanded(false);
-                                }}
-                            />
-                        );
-                    })}
-                </Accordion>
+                <Motion animation="animate-[slide-down_0.3s_ease-in]">
+                    <Accordion
+                        open={expanded === 'fabric'}
+                        title="Fabric"
+                        description={
+                            modLoader && modLoader.loader === 'fabric' ?
+                                modLoader.version
+                                :
+                                t('message.choose_version')
+                        }
+                        onClick={() => setExpanded(prev => prev !== 'fabric' ? 'fabric' : null )}
+                    >
+                        {fabricArtifacts.map((artifact, i) => {
+                            if (i >= 19) return;
+                            return (
+                                <ListItem
+                                    src={FabricIcon}
+                                    title={artifact.version}
+                                    description={artifact.stable ? t('artifact.stable') : t('artifact.experimental')}
+                                    onClick={() => {
+                                        setModLoader({ loader: 'fabric', version: artifact.version });
+                                        setExpanded(null);
+                                    }}
+                                />
+                            );
+                        })}
+                    </Accordion>
+                </Motion>
 
                 <div style={{ display: currentTask && 'none' }} className="fixed inset-x-0 bottom-4 flex flex-row justify-center">
                     <button
@@ -177,7 +187,7 @@ export function ClientVersionDetail({ version }: {
                                 </g>
                             </g>
                         </svg>
-                        Download
+                        {t('label.download')}
                     </button>
                 </div>
 

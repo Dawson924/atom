@@ -3,9 +3,12 @@ import { InstallJarTask, InstallJsonTask, MinecraftVersion, installDependenciesT
 import { CONFIG } from '../store';
 import { getGameProfile, getUserAccount } from './profile.util';
 import { IpcMainEvent } from 'electron';
-import axios from 'axios';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolveJarLocation } from './authlib-injector';
+import { setupMinecraftDirectory } from './folder';
+import { request } from 'undici';
+
+export const getMinecraftFolder = () => setupMinecraftDirectory(CONFIG.get('launch.folder'));
 
 // 安装任务通用处理器类型
 export type InstallTaskHandler = {
@@ -77,8 +80,10 @@ export const getLaunchOptions = async (location: MinecraftLocation, version: str
 
     // 处理Yggdrasil认证
     if (mode === 'yggdrasil') {
-        const response = await axios.get<{ token: string }>(authentication.yggdrasilAgent.server);
-        authentication.yggdrasilAgent.prefetched = Buffer.from(JSON.stringify(response.data)).toString('base64');
+        const response = await request<{ token: string }>(authentication.yggdrasilAgent.server);
+        authentication.yggdrasilAgent.prefetched = Buffer.from(
+            JSON.stringify(await response.body.json())
+        ).toString('base64');
     }
 
     // 获取游戏配置
@@ -105,7 +110,7 @@ export const getLaunchOptions = async (location: MinecraftLocation, version: str
 };
 
 // 版本处理工具
-export const VersionUtils = {
+export const VersionHelper = {
     // 生成继承版本ID
     createInheritVersionId: (baseVersion: string) =>
         `.${Buffer.from(baseVersion).toString('base64')}`,
@@ -120,7 +125,7 @@ export const VersionUtils = {
     },
 
     // 获取所有版本
-    listVersions: async (folder: MinecraftFolder): Promise<ResolvedVersion[]> => {
+    listAll: async (folder: MinecraftFolder): Promise<ResolvedVersion[]> => {
         const versions = await readdir(folder.versions);
         return Promise.all(
             versions.map(async id => {
@@ -129,7 +134,7 @@ export const VersionUtils = {
                     const version = await Version.parse(folder, id);
                     return {
                         ...version,
-                        minecraftVersion: VersionUtils.parseVersionId(version.minecraftVersion)
+                        minecraftVersion: VersionHelper.parseVersionId(version.minecraftVersion)
                     };
                 } catch {
                     return null;
@@ -149,10 +154,4 @@ export const VersionUtils = {
             ok(false);
         });
     },
-};
-
-// 配置文件操作
-export const ConfigUtils = {
-    getMinecraftFolder: () => new MinecraftFolder(CONFIG.get('launch.minecraftFolder')),
-    getLaunchConfig: () => CONFIG.get('launch')
 };

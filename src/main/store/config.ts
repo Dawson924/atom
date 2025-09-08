@@ -1,15 +1,21 @@
-import { findStoreDir } from '@common/utils';
+import { findStoreDir } from '../utils/path';
 import Store from 'electron-store';
 import { getDefaultPath } from '../utils/folder';
 
 const store = new Store<{
     appearance: {
+        language: 'en' | 'zh',
         theme: 'light' | 'dark',
-        windowTitle: string,
-        windowSize: {
-            width: number,
-            height: number
+        window: {
+            title: string,
+            size: {
+                width: number,
+                height: number
+            }
         },
+        animation: {
+            effect: boolean;
+        }
     },
     authentication: {
         mode: 'yggdrasil' | 'xbox' | 'offline',
@@ -20,8 +26,8 @@ const store = new Store<{
         }
     },
     launch: {
-        minecraftFolder: string,
-        launchVersion: string,
+        folder: string,
+        version: string,
         runtime: {
             executable: string,
             allocatedMemory: number
@@ -34,12 +40,18 @@ const store = new Store<{
 }>({
     defaults: {
         appearance: {
+            language: 'en',
             theme: 'light',
-            windowTitle: 'Atom Launcher',
-            windowSize: {
-                width: 0,
-                height: 0
+            window: {
+                title: 'Atom Launcher',
+                size: {
+                    width: 0,
+                    height: 0
+                }
             },
+            animation: {
+                effect: true
+            }
         },
         authentication: {
             mode: 'offline',
@@ -49,8 +61,8 @@ const store = new Store<{
             }
         },
         launch: {
-            minecraftFolder: getDefaultPath(),
-            launchVersion: null,
+            folder: getDefaultPath(),
+            version: null,
             runtime: {
                 executable: null,
                 allocatedMemory: 4096

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { CONFIG } from '../store';
 import fs from 'node:fs';
-import axios from 'axios';
+import { request } from 'undici';
 
 const DEFAULT_ARTIFACT_URL = 'https://authlib-injector.yushi.moe/artifact/latest.json';
 const DEFAULT_FILE_NAME = 'authlib-injector.jar';
@@ -10,9 +10,9 @@ const resolveJarLocation = (jar?: string) => {
     if (jar && path.isAbsolute(jar))
         return jar;
     if (!jar) {
-        return path.join(CONFIG.get('launch.minecraftFolder'), DEFAULT_FILE_NAME);
+        return path.join(CONFIG.get('launch.folder'), DEFAULT_FILE_NAME);
     }
-    return path.join(CONFIG.get('launch.minecraftFolder'), jar);
+    return path.join(CONFIG.get('launch.folder'), jar);
 };
 
 const downloadJar = async (jar: string): Promise<void> => {
@@ -23,23 +23,32 @@ const downloadJar = async (jar: string): Promise<void> => {
         return;
 
     try {
-        const latestArtifact = (await axios.get<Tentative>(DEFAULT_ARTIFACT_URL)).data;
-        const response = await axios<Tentative>({
-            method: 'get',
-            url: latestArtifact.download_url,
-            responseType: 'stream'
-        });
+        // 获取最新版本信息
+        const artifactResponse = await request(DEFAULT_ARTIFACT_URL);
+        if (artifactResponse.statusCode !== 200) {
+            throw new Error(`Unable to request: ${artifactResponse.statusCode}`);
+        }
+        const latestArtifact = await artifactResponse.body.json() as Tentative;
+
+        // 下载JAR文件
+        const downloadResponse = await request(latestArtifact.download_url);
+        if (downloadResponse.statusCode !== 200) {
+            throw new Error(`Unable to request: ${downloadResponse.statusCode}`);
+        }
+
         const writer = fs.createWriteStream(jar);
-        response.data.pipe(writer);
-        return new Promise((resolve, reject) => {
+        downloadResponse.body.pipe(writer);
+
+        await new Promise((resolve, reject) => {
             writer.on('finish', () => {
-                console.log(`file downloaded: ${jar}`);
-                resolve();
+                console.log(`file downloaded at: ${jar}`);
+                resolve(null);
             });
             writer.on('error', reject);
         });
     } catch (err: any) {
-        console.error(err.message);
+        console.error('[ERROR]:', err.message);
+        throw err;
     }
 };
 

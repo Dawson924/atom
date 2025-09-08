@@ -7,9 +7,12 @@ import { Accordion, Card, Container, List, ListItem } from '@renderer/components
 import { ClientVersionDetail } from './detail';
 import { ClientService } from '@renderer/api';
 import { useInstallPage } from '@renderer/hooks/store';
+import { useTranslation } from 'react-i18next';
+import { Motion } from '@renderer/components/animation';
 
 export function ClientVersionList() {
     const { goTo } = useInstallPage(state => state);
+    const { t } = useTranslation();
 
     const [versionList, setVersionList] = useState<MinecraftVersionList>();
     const [expanded, setExpanded] = useState('minecraft');
@@ -31,45 +34,48 @@ export function ClientVersionList() {
         <>
             <Container>
                 {/* Latest */}
-                <Card
-                    title="Latest"
-                    className="mb-6 animate-[slide-down_0.1s_ease-in]"
-                >
-                    {/* Minecraft latest release & preview version */}
-                    <List>
-                        <ListItem
-                            src={MinecraftIcon}
-                            title={versionList.latest.release}
-                            description={`Release version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.release).releaseTime)}`}
-                            onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
-                        />
-                        <ListItem
-                            src={CommandBlock}
-                            title={versionList.latest.snapshot}
-                            description={`Snapshot version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.snapshot).releaseTime)}`}
-                            onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
-                        />
-                    </List>
-                </Card>
-                {/* Minecraft Releases */}
-                <Accordion
-                    title={`Release (${versionList.versions.length})`}
-                    open={expanded === 'minecraft'}
-                    className="animate-[slide-down_0.4s_ease-in]"
-                    onClick={() => setExpanded(prev => prev !== 'minecraft' ? 'minecraft' : null)}
-                >
-                    {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion, index) => {
-                        return (
+                <Motion animation="animate-[slide-down_0.1s_ease-in]">
+                    <Card
+                        title={t('label.latest')}
+                        className="mb-6"
+                    >
+                        {/* Minecraft latest release & preview version */}
+                        <List>
                             <ListItem
-                                key={`${version.id}_${index}`}
                                 src={MinecraftIcon}
-                                title={version.id}
-                                description={toUTCStringPretty(version.releaseTime)}
-                                onClick={() => goTo(<ClientVersionDetail version={version.id} />)}
+                                title={versionList.latest.release}
+                                description={`Release version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.release).releaseTime)}`}
+                                onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
                             />
-                        );
-                    })}
-                </Accordion>
+                            <ListItem
+                                src={CommandBlock}
+                                title={versionList.latest.snapshot}
+                                description={`Snapshot version, ${toUTCStringPretty(versionList.versions.find(ver => ver.id === versionList.latest.snapshot).releaseTime)}`}
+                                onClick={() => goTo(<ClientVersionDetail version={versionList.latest.release} />)}
+                            />
+                        </List>
+                    </Card>
+                </Motion>
+                {/* Minecraft Releases */}
+                <Motion animation="animate-[slide-down_0.4s_ease-in]">
+                    <Accordion
+                        title={`${t('label.release')} (${versionList.versions.length})`}
+                        open={expanded === 'minecraft'}
+                        onClick={() => setExpanded(prev => prev !== 'minecraft' ? 'minecraft' : null)}
+                    >
+                        {versionList.versions.filter(ver => ver.type === 'release').map((version: MinecraftVersion, index) => {
+                            return (
+                                <ListItem
+                                    key={`${version.id}_${index}`}
+                                    src={MinecraftIcon}
+                                    title={version.id}
+                                    description={toUTCStringPretty(version.releaseTime)}
+                                    onClick={() => goTo(<ClientVersionDetail version={version.id} />)}
+                                />
+                            );
+                        })}
+                    </Accordion>
+                </Motion>
             </Container>
         </>
     );

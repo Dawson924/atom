@@ -8,6 +8,8 @@ import { InputModal, SelectPromptModal, useModal } from '@renderer/components/mo
 import { useToast } from '@renderer/components/toast';
 import { CacheService, ConfigService, UserService } from '@renderer/api';
 import { useSession } from '@renderer/hooks';
+import { useTranslation } from 'react-i18next';
+import { Motion } from '@renderer/components/animation';
 
 const ANIM_SETS = [
     skinview3d.IdleAnimation,
@@ -23,6 +25,7 @@ export default function AccountPage() {
     const { openModal } = useModal();
     const { addToast } = useToast();
     const { session, refreshSession } = useSession();
+    const { t } = useTranslation();
     // Authenticate
     const [skinUrl, setSkinUrl] = useState<string>('');
     const [username, setUsername] = useState<string>('');
@@ -158,15 +161,18 @@ export default function AccountPage() {
     return (
         <Container>
             {authOptions.mode === 'yggdrasil' &&
+            <Motion animation="animate-[slide-down_0.2s_ease-in]">
                 <Card
-                    title={session.signedIn ? `Hello, ${session.profile?.name}` : 'Sign In'}
+                    title={session.signedIn ? t('message.greeting', { name: session.profile?.name }) : t('user.auth')}
                     className="mb-6"
                 >
                     {/* Sign-in Form */}
                     <div style={{ display: session.signedIn ? 'none' : 'flex' }} className="flex-col px-5">
                         <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                             <div>
-                                <h4 className="text-sm text-gray-900 dark:text-gray-50">Username</h4>
+                                <h4 className="text-sm text-gray-900 dark:text-gray-50">
+                                    {t('sign_in_username_text')}
+                                </h4>
                             </div>
                             <div className="ml-auto w-full max-w-lg min-w-[200px]">
                                 <Input
@@ -178,7 +184,9 @@ export default function AccountPage() {
                         </div>
                         <div className="px-2 mb-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                             <div>
-                                <h4 className="text-sm text-gray-900 dark:text-gray-50">Password</h4>
+                                <h4 className="text-sm text-gray-900 dark:text-gray-50">
+                                    {t('user.password')}
+                                </h4>
                             </div>
                             <div className="ml-auto w-full max-w-lg min-w-[200px]">
                                 <Input
@@ -193,7 +201,9 @@ export default function AccountPage() {
                     <div style={{ display: session.signedIn ? 'block' : 'none' }} className="px-7 mt-3">
                         <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center rounded-lg">
                             <div className="w-16">
-                                <h4 className="text-sm text-gray-900 dark:text-gray-50">UID: </h4>
+                                <h4 className="text-sm text-gray-900 dark:text-gray-50">
+                                    {t('label.uid')}:
+                                </h4>
                             </div>
                             <div className="w-full max-w-lg min-w-[200px]">
                                 <p className="text-sm text-gray-500 dark:text-gray-300">{session.profile?.id}</p>
@@ -201,7 +211,9 @@ export default function AccountPage() {
                         </div>
                         <div className="px-2 w-full h-6 flex flex-row space-x-3 items-center rounded-lg">
                             <div className="w-16">
-                                <h4 className="text-sm text-gray-900 dark:text-gray-50">Name: </h4>
+                                <h4 className="text-sm text-gray-900 dark:text-gray-50">
+                                    {t('label.name')}:
+                                </h4>
                             </div>
                             <div className="w-full max-w-lg min-w-[200px]">
                                 <p className="text-sm text-gray-500 dark:text-gray-300">{session.profile?.name}</p>
@@ -220,7 +232,9 @@ export default function AccountPage() {
                                 {/* Animation select */}
                                 <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                     <div>
-                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Animation</h4>
+                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">
+                                            {t('skinviewer.animation')}
+                                        </h4>
                                     </div>
                                     <div className="w-full">
                                         <NativeSelect
@@ -241,7 +255,9 @@ export default function AccountPage() {
                                 {/* Animation speed */}
                                 <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                     <div>
-                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Speed</h4>
+                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">
+                                            {t('skinviewer.speed')}
+                                        </h4>
                                     </div>
                                     <div className="w-full">
                                         <TextField
@@ -256,7 +272,9 @@ export default function AccountPage() {
                                 {/* Auto rotation */}
                                 <div className="px-2 h-6 flex flex-row space-x-4 items-center rounded-lg">
                                     <div>
-                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">Auto Rotation</h4>
+                                        <h4 className="w-24 text-sm text-nowrap text-gray-900 dark:text-gray-50">
+                                            {t('skinviewer.auto-rotate')}
+                                        </h4>
                                     </div>
                                     <div className="w-full">
                                         <div
@@ -299,7 +317,7 @@ export default function AccountPage() {
                                             />
                                         </svg>
                                         <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="font-semibold">Click to upload</span> or drag and drop
+                                            {t('message.upload_hint')}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
                                             PNG (64x64px, 64x32px, MAX. 128x128px)
@@ -441,7 +459,7 @@ export default function AccountPage() {
                             color="error"
                             onClick={handleLogout}
                         >
-                            Sign out
+                            {t('sign_out_button_text')}
                         </Button>
                     </div>
                     {/* Button Action Panel */}
@@ -454,49 +472,53 @@ export default function AccountPage() {
                                 color="success"
                                 onClick={handleLogin}
                             >
-                                Login
+                                {t('user.login')}
                             </Button>
                         </div>
                     }
-                </Card>}
+                </Card>
+            </Motion>}
             {authOptions.mode === 'yggdrasil' &&
+            <Motion animation="animate-[slide-down_0.4s_ease-in]">
                 <Card
-                    title="Yggdrasil Agent"
+                    title={t('label.server')}
                     className="mb-6"
                 >
                     <List className="space-y-2">
                         <FormInput
-                            title="Server"
+                            title={t('label.address')}
                             name="authentication.yggdrasilAgent.server"
                             value={authOptions.yggdrasilAgent.server}
                             onChange={handleChange}
                         />
                         <FormInput
-                            title="Agent"
+                            title={t('label.agent')}
                             name="authentication.yggdrasilAgent.jar"
                             value={authOptions.yggdrasilAgent.jar}
                             onChange={handleChange}
                         />
                     </List>
-                </Card>}
-            <Card
-                title="Profile"
-            >
-                <List className="space-y-2">
-                    <FormSelect
-                        title="Mode"
-                        name="authentication.mode"
-                        value={authOptions.mode}
-                        onChange={handleChange}
-                        options={[
-                            { label: 'Offline', value: 'offline' },
-                            { label: 'Yggdrasil', value: 'yggdrasil' },
-                        ]}
-                    />
-                    {authOptions.mode === 'offline' && offlineProfiles &&
+                </Card>
+            </Motion>}
+            <Motion animation="animate-[fade-in_0.2s_ease-in]">
+                <Card
+                    title={t('label.profile')}
+                >
+                    <List className="space-y-2">
+                        <FormSelect
+                            title={t('user.mode')}
+                            name="authentication.mode"
+                            value={authOptions.mode}
+                            onChange={handleChange}
+                            options={[
+                                { label: t('user.mode.legacy'), value: 'offline' },
+                                { label: t('user.mode.yggdrasil'), value: 'yggdrasil' },
+                            ]}
+                        />
+                        {authOptions.mode === 'offline' && offlineProfiles &&
                         <>
                             <FormSelect
-                                title="Profiles"
+                                title={t('label.profile')}
                                 value={session.profile?.name}
                                 onChange={async (e) =>
                                     UserService
@@ -508,7 +530,7 @@ export default function AccountPage() {
                                 options={offlineProfiles.map(item => {
                                     return { label: item.name, value: item.name };
                                 })}
-                                placeholder="Not selected"
+                                placeholder={t('not_selected_text')}
                             />
                             <div className="px-2 mt-2 space-x-4 w-full flex justify-end">
                                 <Button
@@ -518,23 +540,22 @@ export default function AccountPage() {
                                     color="primary"
                                     onClick={() => {
                                         openModal(InputModal, {
-                                            title: 'New Profile',
-                                            name: 'Username',
+                                            title: t('label.new_profile'),
                                             onConfirm: (value: string) => {
                                                 if (!value) return;
                                                 UserService.addProfile(value)
                                                     .then(() => {
                                                         UserService.getProfiles().then(setOfflineProfiles);
-                                                        addToast(`New profile - ${value}`);
+                                                        addToast(t('message.greeting', { name: value }));
                                                     })
                                                     .catch(() => {
-                                                        addToast('Profile already exists', 'error');
+                                                        addToast(t('message.profile_exists'), 'error');
                                                     });
                                             }
                                         });
                                     }}
                                 >
-                                    New Profile
+                                    {t('label.new_profile')}
                                 </Button>
                                 <Button
                                     type="button"
@@ -547,13 +568,14 @@ export default function AccountPage() {
                                             .then(fetchData);
                                     }}
                                 >
-                                    Remove
+                                    {t('label.remove')}
                                 </Button>
                             </div>
                         </>
-                    }
-                </List>
-            </Card>
+                        }
+                    </List>
+                </Card>
+            </Motion>
         </Container>
     );
 }

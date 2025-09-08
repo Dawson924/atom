@@ -2,10 +2,12 @@ import { useTask } from '@renderer/hooks/store';
 import { useState } from 'react';
 import { FaDownload } from 'react-icons/fa';
 import { useNavigate } from '@renderer/router';
+import { useTranslation } from 'react-i18next';
 
 export const TaskFloatingButton = () => {
     const { taskStates, isProcessing } = useTask();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [menuOpened, setMenuOpened] = useState(false);
 
@@ -49,14 +51,18 @@ export const TaskFloatingButton = () => {
                     className="bg-neutral-50 dark:bg-neutral-700 rounded-lg shadow-xl absolute bottom-20 right-0 w-72 border border-neutral-100 dark:border-neutral-800 animate-fade-in"
                 >
                     <div className="p-4 border-b border-neutral-100 dark:border-neutral-600">
-                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Backend Tasks</h3>
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                            {t('task.backend_tasks')}
+                        </h3>
                     </div>
                     <div className="divide-y divide-neutral-100 dark:divide-neutral-600">
                         {/* 显示所有任务 */}
                         {taskStates.filter(t => t.name === 'task:json').map(task => (
                             <div key={task.name} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">Installing metadata...</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                        {t('task.downloading', { task: `${task.id}.json` })}
+                                    </span>
                                     <span className={`text-xs font-medium ${task.progress === 100 ? 'text-green-500' : 'text-blue-500'}`}>
                                         {Number(task.progress.toFixed(0))}%
                                     </span>
@@ -67,11 +73,10 @@ export const TaskFloatingButton = () => {
                                         style={{ width: `${task.progress}%` }}
                                     />
                                 </div>
-                                {/* 任务完成状态图标 */}
                                 {Number(task.progress.toFixed(0)) === 100 && (
                                     <div className="mt-1 flex items-center text-green-500 text-xs">
                                         <i className="fa fa-check-circle mr-1" />
-                                        <span>Done</span>
+                                        <span>{t('state.done')}</span>
                                     </div>
                                 )}
                             </div>
@@ -79,7 +84,9 @@ export const TaskFloatingButton = () => {
                         {taskStates.filter(t => t.name === 'task:jar').map(task => (
                             <div key={task.name} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">Installing executable...</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                        {t('task.downloading', { task: `${task.id}.jar` })}
+                                    </span>
                                     <span className={`text-xs font-medium ${task.progress === 100 ? 'text-green-500' : 'text-blue-500'}`}>
                                         {Number(task.progress.toFixed(0))}%
                                     </span>
@@ -90,11 +97,10 @@ export const TaskFloatingButton = () => {
                                         style={{ width: `${task.progress}%` }}
                                     />
                                 </div>
-                                {/* 任务完成状态图标 */}
                                 {Number(task.progress.toFixed(0)) === 100 && (
                                     <div className="mt-1 flex items-center text-green-500 text-xs">
                                         <i className="fa fa-check-circle mr-1" />
-                                        <span>Done</span>
+                                        <span>{t('state.done')}</span>
                                     </div>
                                 )}
                             </div>
@@ -102,7 +108,9 @@ export const TaskFloatingButton = () => {
                         {taskStates.filter(t => t.name === 'task:dependencies').map(task => (
                             <div key={task.name} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors">
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">Dependencies</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                        {t('task.downloading', { task: 'dependencies' })}
+                                    </span>
                                     <span className={`text-xs font-medium ${task.progress === 100 ? 'text-green-500' : 'text-blue-500'}`}>
                                         {Number(task.progress.toFixed(0))}%
                                     </span>
@@ -113,11 +121,10 @@ export const TaskFloatingButton = () => {
                                         style={{ width: `${task.progress}%` }}
                                     />
                                 </div>
-                                {/* 任务完成状态图标 */}
                                 {Number(task.progress.toFixed(0)) === 100 && (
                                     <div className="mt-1 flex items-center text-green-500 text-xs">
                                         <i className="fa fa-check-circle mr-1" />
-                                        <span>Done</span>
+                                        <span>{t('state.done')}</span>
                                     </div>
                                 )}
                             </div>

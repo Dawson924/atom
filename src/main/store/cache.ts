@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import { findStoreDir } from '@common/utils/path';
+import { findStoreDir } from '../utils/path';
 
 type ValueType = string | number | boolean;
 

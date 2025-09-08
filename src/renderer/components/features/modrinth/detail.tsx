@@ -10,6 +10,7 @@ import { number } from '@common/utils/format';
 import { convertUnitsPrecise } from '@common/utils/byte';
 import { VersionItem } from '@renderer/components/features/mods/version-item';
 import { flattenAndDeduplicate } from '@common/utils/array';
+import { Motion } from '@renderer/components/animation';
 
 type Dependencies = Array<{ version_id: string | null; project_id: string; dependency_type: 'required' | 'optional' | 'incompatible' | 'embedded' }>;
 
@@ -124,60 +125,62 @@ export function ModrinthDetail(props: { project: Project, hit: SearchResultHit }
 
     return (
         <Container>
-            <Card
-                className="px-4 py-2 mb-6 flex flex-col items-start animate-[slide-down_0.2s_ease-in]"
-            >
-                <button
-                    className="size-6 flex cursor-pointer"
-                    onClick={() => goTo('modrinth')}
+            <Motion animation="animate-[slide-down_0.2s_ease-in]">
+                <Card
+                    className="px-4 py-2 mb-6 flex flex-col items-start"
                 >
-                    <svg className="w-full h-full text-gray-700 dark:text-gray-50" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                        <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                        <g id="SVGRepo_iconCarrier">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M6.3508 12.7499L11.2096 17.4615L10.1654 18.5383L3.42264 11.9999L10.1654 5.46148L11.2096 6.53833L6.3508 11.2499L21 11.2499L21 12.7499L6.3508 12.7499Z"
+                    <button
+                        className="size-6 flex cursor-pointer"
+                        onClick={() => goTo('modrinth')}
+                    >
+                        <svg className="w-full h-full text-gray-700 dark:text-gray-50" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <g id="SVGRepo_bgCarrier" strokeWidth={0} />
+                            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M6.3508 12.7499L11.2096 17.4615L10.1654 18.5383L3.42264 11.9999L10.1654 5.46148L11.2096 6.53833L6.3508 11.2499L21 11.2499L21 12.7499L6.3508 12.7499Z"
+                                />
+                            </g>
+                        </svg>
+                    </button>
+                    <div className="h-20 w-full space-x-4 flex flex-row items-center">
+                        <div className="size-14 flex-shrink-0">
+                            <img
+                                src={project.icon_url}
+                                className="size-full rounded-md"
                             />
-                        </g>
-                    </svg>
-                </button>
-                <div className="h-20 w-full space-x-4 flex flex-row items-center">
-                    <div className="size-14 flex-shrink-0">
-                        <img
-                            src={project.icon_url}
-                            className="size-full rounded-md"
-                        />
-                    </div>
-                    <div className="w-full h-full flex flex-col items-start justify-center">
-                        <p className="text-sm text-gray-950 dark:text-gray-50">{project.title}</p>
-                        <p className="md:w-xl lg:w-3xl xl:w-5xl text-xs overflow-hidden whitespace-nowrap text-ellipsis text-gray-400">{project.description}</p>
-                        <div className="mt-1 w-full grid grid-cols-3">
-                            <div className="text-xs text-gray-400 inline-flex items-center gap-1">
-                                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z" />
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                                </svg>
-                                <p>{project.loaders.slice(0, 2).join(' / ')}</p>
-                                <p className="ml-0.5">{project.game_versions[0]}</p>
-                            </div>
-                            <div className="text-xs text-gray-400 inline-flex items-center gap-1">
-                                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4" />
-                                </svg>
-                                {number.format(project.downloads)}
-                            </div>
-                            <div className="text-xs text-gray-400 inline-flex items-center gap-1">
-                                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 20V7m0 13-4-4m4 4 4-4m4-12v13m0-13 4 4m-4-4-4 4" />
-                                </svg>
-                                {toUTCStringPretty(project.updated)}
+                        </div>
+                        <div className="w-full h-full flex flex-col items-start justify-center">
+                            <p className="text-sm text-gray-950 dark:text-gray-50">{project.title}</p>
+                            <p className="md:w-xl lg:w-3xl xl:w-5xl text-xs overflow-hidden whitespace-nowrap text-ellipsis text-gray-400">{project.description}</p>
+                            <div className="mt-1 w-full grid grid-cols-3">
+                                <div className="text-xs text-gray-400 inline-flex items-center gap-1">
+                                    <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z" />
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                                    </svg>
+                                    <p>{project.loaders.slice(0, 2).join(' / ')}</p>
+                                    <p className="ml-0.5">{project.game_versions[0]}</p>
+                                </div>
+                                <div className="text-xs text-gray-400 inline-flex items-center gap-1">
+                                    <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4" />
+                                    </svg>
+                                    {number.format(project.downloads)}
+                                </div>
+                                <div className="text-xs text-gray-400 inline-flex items-center gap-1">
+                                    <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 20V7m0 13-4-4m4 4 4-4m4-12v13m0-13 4 4m-4-4-4 4" />
+                                    </svg>
+                                    {toUTCStringPretty(project.updated)}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </Card>
+                </Card>
+            </Motion>
             {project && (
                 <div className="flex flex-col">
                     {isLoading ? (
@@ -185,41 +188,43 @@ export function ModrinthDetail(props: { project: Project, hit: SearchResultHit }
                     ) : processedVersions.length === 0 ? (
                         <div className="text-center py-8 text-gray-600 dark:text-gray-400">No versions available</div>
                     ) : (
-                        processedVersions.map(({ version, items, dependencies }) => (
-                            <Accordion
-                                key={version}
-                                open={expandedVersion === version}
-                                title={version}
-                                className="mb-4 animate-[slide-down_0.4s_ease-in] will-change-transform"
-                                onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
-                            >
-                                {dependencies && dependencies.length > 0 && (
-                                    <div className="mb-3">
-                                        <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Dependencies</p>
-                                        {dependencies.map(dep => (
-                                            <ListItem
-                                                variant="standard"
-                                                src={dep.icon_url}
-                                                title={dep.title}
-                                                description={dep.description}
-                                                onClick={() => handleDependencyClick(dep)}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                                {dependencies && dependencies.length > 0 && (
-                                    <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Artifacts</p>
-                                )}
-                                {items.map(({ file, projectVersion }, index) => (
-                                    <VersionItem
-                                        key={`${file.filename}_${index}`}
-                                        file={file}
-                                        projectVersion={projectVersion}
-                                        versions={versions}
-                                        downloadFile={downloadFile}
-                                    />
-                                ))}
-                            </Accordion>
+                        processedVersions.map(({ version, items, dependencies }, i) => (
+                            <Motion animation={`animate-[slide-down_0.${i+2}s_ease-in]`}>
+                                <Accordion
+                                    key={version}
+                                    open={expandedVersion === version}
+                                    title={version}
+                                    className="mb-4 will-change-transform"
+                                    onClick={() => setExpandedVersion(prev => prev !== version ? version : null)}
+                                >
+                                    {dependencies && dependencies.length > 0 && (
+                                        <div className="mb-3">
+                                            <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Dependencies</p>
+                                            {dependencies.map(dep => (
+                                                <ListItem
+                                                    variant="standard"
+                                                    src={dep.icon_url}
+                                                    title={dep.title}
+                                                    description={dep.description}
+                                                    onClick={() => handleDependencyClick(dep)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {dependencies && dependencies.length > 0 && (
+                                        <p className="px-1 text-gray-800 dark:text-gray-200 mb-1.5">Artifacts</p>
+                                    )}
+                                    {items.map(({ file, projectVersion }, index) => (
+                                        <VersionItem
+                                            key={`${file.filename}_${index}`}
+                                            file={file}
+                                            projectVersion={projectVersion}
+                                            versions={versions}
+                                            downloadFile={downloadFile}
+                                        />
+                                    ))}
+                                </Accordion>
+                            </Motion>
                         ))
                     )}
                 </div>

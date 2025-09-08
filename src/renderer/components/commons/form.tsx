@@ -5,7 +5,6 @@ import { Input, Select } from './input';
 type FormItemProps = {
     title?: string;
     name?: string;
-    value: any;
 };
 
 const Form: React.FC<FormHTMLAttributes<HTMLFormElement>> = ({ children, onSubmit, ...rest }) => {
@@ -91,4 +90,31 @@ const FormRangeInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElem
     );
 };
 
-export { Form, FormInput, FormSelect, FormRangeInput };
+const FormCheckbox: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>> = ({ title, name, checked, onClick }) => {
+    return (
+        <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
+            <div style={{ display: title ? 'block' : 'none' }} className="shrink-0">
+                <h3 className="text-sm text-gray-900 dark:text-gray-50 dark:bg-neutral-800 group">{title}</h3>
+            </div>
+            <div className="w-full min-w-80">
+                <div
+                    className={`relative rounded-full ml-auto w-12 h-6 transition duration-200 ease-linear ${checked ? 'bg-blue-500 dark:bg-blue-400' : 'bg-neutral-300 dark:bg-neutral-700'}`}
+                >
+                    <label
+                        htmlFor={title}
+                        className={`absolute left-0 bg-white dark:bg-neutral-800 border-2 mb-2 w-6 h-6 rounded-full transition transform duration-100 ease-linear cursor-pointer ${checked ? 'translate-x-full border-blue-500 dark:border-blue-400' : 'translate-x-0 border-neutral-300 dark:border-neutral-700'}`}
+                    />
+                    <input
+                        type="checkbox"
+                        id={title}
+                        name={name}
+                        className="appearance-none w-full h-full cursor-pointer active:outline-none focus:outline-none"
+                        onClick={onClick}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export { Form, FormInput, FormSelect, FormRangeInput, FormCheckbox };

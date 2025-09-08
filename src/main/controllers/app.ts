@@ -6,6 +6,8 @@ export class AppServiceController extends IPCServiceController {
     protected app: Electron.App;
 
     protected override registerHandlers() {
+        this.handle('packaged', () => this.app.isPackaged);
+
         this.handle('close', () => {
             if (process.platform !== 'darwin') {
                 this.app.quit();

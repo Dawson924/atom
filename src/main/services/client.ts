@@ -1,27 +1,23 @@
-import { launch, LaunchOption, MinecraftFolder, Version } from '@xmcl/core';
+import { launch, LaunchOption, Version } from '@xmcl/core';
 import { getFabricLoaderArtifact, getFabricLoaders, getVersionList, installDependenciesTask, installFabricByLoaderArtifact, type FabricArtifactVersion, type MinecraftVersionList } from '@xmcl/installer';
-import { CONFIG } from '../store';
 import { IpcMainEvent } from 'electron';
-import { createTaskHandler, getLaunchOptions, installVersionTask, VersionUtils } from '../utils/client.util';
+import { createTaskHandler, getLaunchOptions, getMinecraftFolder, installVersionTask, VersionHelper } from '../utils/client.util';
 import { data, error, ERROR_CODES } from '../libs/response';
 import { findJava } from '../utils/java';
 import { ModVersionFile } from '@xmcl/modrinth';
 import { downloadFile } from '@main/utils/download.mjs';
 import path, { isAbsolute } from 'node:path';
-import { setupMinecraftDirectory } from '@main/utils/folder';
 
 export class ClientService {
-    private minecraftFolder: MinecraftFolder;
     private versionManifest: MinecraftVersionList;
     private fabricArtifacts: FabricArtifactVersion[];
 
     async getFolder() {
-        const folder = await setupMinecraftDirectory(this.minecraftFolder.root);
-        return data(folder);
+        return data(await getMinecraftFolder());
     }
 
     async getPath(_: IpcMainEvent, id: string, subpath?: string) {
-        const versionFolder = this.minecraftFolder.getVersionRoot(id);
+        const versionFolder = (await getMinecraftFolder()).getVersionRoot(id);
         if (subpath)
             return data(path.join(versionFolder, subpath));
         else
@@ -29,11 +25,11 @@ export class ClientService {
     }
 
     async getVersions() {
-        return data(await VersionUtils.listVersions(this.minecraftFolder));
+        return data(await VersionHelper.listAll(await getMinecraftFolder()));
     }
 
     async hasVersion(_: IpcMainEvent, id: string) {
-        return data(await VersionUtils.exists(this.minecraftFolder, id));
+        return data(await VersionHelper.exists(await getMinecraftFolder(), id));
     }
 
     async getVersionManifest() {
@@ -68,7 +64,7 @@ export class ClientService {
         versionInfo.id = id;
 
         await installVersionTask(
-            this.minecraftFolder,
+            await getMinecraftFolder(),
             versionInfo,
             jsonTask,
             jarTask,
@@ -86,11 +82,11 @@ export class ClientService {
         const depsTask = createTaskHandler(event, 'task:dependencies', id, version);
 
         // 安装基础版本
-        const inheritor = VersionUtils.createInheritVersionId(version);
+        const inheritor = VersionHelper.createInheritVersionId(version);
         const mcInfo = await this.resolveVersion(version);
         mcInfo.id = inheritor;
         await installVersionTask(
-            this.minecraftFolder,
+            await getMinecraftFolder(),
             mcInfo,
             jsonTask,
             jarTask,
@@ -100,12 +96,12 @@ export class ClientService {
         // 安装Fabric
         const fabricVersionName = await installFabricByLoaderArtifact(
             await getFabricLoaderArtifact(version, loaderVersion),
-            this.minecraftFolder,
+            await getMinecraftFolder(),
             { versionId: id, inheritsFrom: inheritor }
         );
 
         // 安装依赖
-        await installDependenciesTask(await Version.parse(this.minecraftFolder, fabricVersionName))
+        await installDependenciesTask(await Version.parse(await getMinecraftFolder(), fabricVersionName))
             .startAndWait(depsTask);
 
         event.sender.send('on-complete');
@@ -122,7 +118,7 @@ export class ClientService {
     }
 
     async launch(_: IpcMainEvent, id: string) {
-        const options = await getLaunchOptions(this.minecraftFolder, id);
+        const options = await getLaunchOptions(await getMinecraftFolder(), id);
         await launch({
             ...options,
             minMemory: options.memoryOptions.min,
@@ -140,7 +136,6 @@ export class ClientService {
     }
 
     private async initialize() {
-        this.minecraftFolder = await setupMinecraftDirectory(CONFIG.get('launch.minecraftFolder'));
         this.versionManifest = await getVersionList();
         this.fabricArtifacts = await getFabricLoaders();
     }

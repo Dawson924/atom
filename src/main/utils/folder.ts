@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { DEFAULT_FILE_NAME, downloadJar } from './authlib-injector';
 import { MinecraftFolder } from '@xmcl/core';
+import { findStoreDir } from './path';
 
 /**
  * 获取系统对应的.minecraft路径
@@ -52,7 +53,7 @@ async function setupMinecraftDirectory(dir?: string) {
         await ensureDirectory(path.join(minecraftPath, dir));
     }
 
-    await downloadJar(path.join(minecraftPath, DEFAULT_FILE_NAME));
+    await downloadJar(path.join(findStoreDir(), DEFAULT_FILE_NAME));
 
     return MinecraftFolder.from(minecraftPath);
 }

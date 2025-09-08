@@ -1,7 +1,7 @@
 {
   "name": "atom",
   "productName": "AtomLauncher",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -44,23 +44,31 @@
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.4.1",
     "@xmcl/task": "^4.1.1",
-    "axios": "^1.9.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "electron": "36.2.0",
     "electron-store": "^10.0.1",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
-    "framer-motion": "^12.12.2",
     "fs-extra": "^11.3.0",
     "headview3d": "^3.0.2",
+    "i18next": "^25.2.1",
+    "i18next-icu": "^2.3.0",
+    "i18next-parser": "^9.3.0",
+    "motion": "^12.17.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^15.5.2",
+    "react-icons": "^5.5.0",
     "short-number": "^1.0.7",
     "skinview3d": "^3.4.1",
+    "tailwindcss": "^4.1.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "which": "^5.0.0",
-    "winreg": "^1.2.5"
+    "winreg": "^1.2.5",
+    "zustand": "^5.0.5"
   },
   "dependencies": {
     "@xmcl/core": "^2.14.1",
@@ -69,13 +77,8 @@
     "@xmcl/system": "^2.2.8",
     "@xmcl/user": "^4.2.0",
     "electron-squirrel-startup": "^1.0.1",
+    "i18next-http-backend": "^3.0.2",
     "lodash": "^4.17.21",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-icons": "^5.5.0",
-    "tailwindcss": "4.0.9",
-    "undici": "^7.10.0",
-    "uuid": "^11.1.0",
-    "zustand": "^5.0.5"
+    "undici": "^7.10.0"
   }
 }

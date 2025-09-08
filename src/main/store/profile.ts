@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import Store from 'electron-store';
 import type { AccountProfile, AuthenticatedAccount, UserSelect } from '@common/types/auth';
-import { findStoreDir } from '@common/utils';
+import { findStoreDir } from '../utils/path';
 
 const store = new Store<{
     profiles: Record<string, AccountProfile>;

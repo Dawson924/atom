@@ -6,11 +6,13 @@ import { ClientService, ConfigService, UserService } from '@renderer/api';
 import { useToast } from '@renderer/components/toast';
 import { useSession } from '@renderer/hooks';
 import { Input } from '@renderer/components/commons';
+import { useTranslation } from 'react-i18next';
 
 export default function HomePage() {
     const navigate = useNavigate();
     const { addToast } = useToast();
     const { session, refreshSession } = useSession();
+    const { t } = useTranslation();
 
     const [versionName, setVersionName] = useState<string | undefined>();
     const [skinUrl, setSkinUrl] = useState<string>('');
@@ -18,7 +20,7 @@ export default function HomePage() {
     const fetchData = async () => {
         try {
             const [versionName] = await Promise.all([
-                ConfigService.get('launch.launchVersion'),
+                ConfigService.get('launch.version'),
             ]);
             setVersionName(versionName);
         } catch (error) {
@@ -113,13 +115,13 @@ export default function HomePage() {
                             {/* Segmented Controls */}
                             <div className="inline-flex h-9 w-auto items-baseline justify-start rounded-lg bg-gray-100 dark:bg-neutral-900 p-1">
                                 <MenuItem
-                                    value="Mojang"
+                                    value={t('user.mode.yggdrasil')}
                                     selected={session.mode === 'yggdrasil'}
                                     icon={<YggdrasilIcon />}
                                     onClick={() => changeLaunchMode('yggdrasil')}
                                 />
                                 <MenuItem
-                                    value="Offline"
+                                    value={t('user.mode.legacy')}
                                     selected={session.mode === 'offline'}
                                     icon={<GitHubIcon />}
                                     onClick={() => changeLaunchMode('offline')}
@@ -142,7 +144,7 @@ export default function HomePage() {
                                                     className="text-lg font-light text-gray-700 dark:text-gray-300 cursor-pointer"
                                                     onClick={() => navigate('settings?page=account')}
                                                 >
-                                                    You haven't signed in
+                                                    {t('message.not_signed_in')}
                                                 </h3>
                                             </div>
                                         </div>)
@@ -176,15 +178,17 @@ export default function HomePage() {
                                     if (!versionName)
                                         return navigate('home/versions');
                                     else if (session.mode !== 'offline' && !session.signedIn) {
-                                        return addToast('You haven\'t signed in', 'error');
+                                        return addToast(t('message.not_signed_in'), 'error');
                                     }
 
                                     ClientService.launch(versionName);
                                 }}
                                 disabled={session.mode !== 'offline' && !session.signedIn}
                             >
-                                <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">Launch</h3>
-                                <p className="text-xs font-[Inter] text-gray-400">{versionName ?? 'Choose a minecraft version'}</p>
+                                <h3 className="text-xl font-semibold font-[Inter] text-gray-900 dark:text-gray-200">
+                                    {t('label.launch')}
+                                </h3>
+                                <p className="text-xs font-[Inter] text-gray-400">{versionName ?? t('message.choose_version')}</p>
                             </button>
                             {/* Nav buttons */}
                             <div className="grid grid-cols-2 space-x-2">
@@ -192,13 +196,17 @@ export default function HomePage() {
                                     className="h-9 flex flex-col justify-center items-center transition-all cursor-pointer border rounded-md border-gray-500 hover:bg-gray-100 dark:border-gray-400 dark:hover:bg-gray-200 group"
                                     onClick={() => navigate('/home/versions')}
                                 >
-                                    <h4 className="lowercase tracking-wide text-sm font-semibold font-[Inter] text-gray-700 dark:text-gray-200 group-hover:text-gray-950">versions</h4>
+                                    <h4 className="tracking-wide text-sm font-semibold font-[Inter] text-gray-700 dark:text-gray-200 group-hover:text-gray-950">
+                                        {t('label.versions')}
+                                    </h4>
                                 </div>
                                 <div
                                     className="h-9 flex flex-col justify-center items-center transition-all cursor-pointer border rounded-md border-gray-500 hover:bg-gray-100 dark:border-gray-400 dark:hover:bg-gray-200 group"
                                     onClick={() => navigate('/home/manage')}
                                 >
-                                    <h4 className="lowercase tracking-wide text-sm font-semibold font-[Inter] text-gray-700 dark:text-gray-200 group-hover:text-gray-950">manage</h4>
+                                    <h4 className="tracking-wide text-sm font-semibold font-[Inter] text-gray-700 dark:text-gray-200 group-hover:text-gray-950">
+                                        {t('label.manage')}
+                                    </h4>
                                 </div>
                             </div>
                         </div>

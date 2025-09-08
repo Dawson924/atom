@@ -27,11 +27,11 @@ function InputModal({
                     {/* Modal content */}
                     <div className="relative p-4 bg-white rounded-lg shadow dark:bg-neutral-800 sm:p-5">
                         {/* Modal header */}
-                        <div className="flex justify-between items-center pb-4 mb-4 rounded-t sm:mb-5 dark:border-gray-600">
+                        <div className="flex justify-between items-center pb-4 mb-4 rounded-t sm:mb-5 dark:border-neutral-600">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
                             <button
                                 type="button"
-                                className="text-gray-400 bg-transparent hover:bg-neutral-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                className="text-gray-400 bg-transparent hover:bg-neutral-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-neutral-600 dark:hover:text-white"
                                 onClick={onClose}
                             >
                                 <svg

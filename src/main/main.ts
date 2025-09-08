@@ -27,14 +27,14 @@ const controllers: IPCServiceController[] = [];
 
 const createWindow = (): void => {
     // Create the browser window.
-    const windowSize = CONFIG.get<Tentative>('appearance.windowSize');
+    const windowSize = CONFIG.get<Tentative>('appearance.window.size');
     const windowSizeMode =
         (windowSize.width === 0 && windowSize.height === 0) ? 'default' :
             (windowSize.width < 0 && windowSize.height < 0) ? 'fullscreen' :
                 'customized';
 
     mainWindow = new BrowserWindow({
-        title: CONFIG.get('appearance.windowTitle') || 'Atom Launcher',
+        title: CONFIG.get('appearance.window.title') || 'Atom Launcher',
         width: windowSizeMode === 'customized' ? windowSize.width : DefaultWindowOptions.width,
         height: windowSizeMode === 'customized' ? windowSize.height : DefaultWindowOptions.height,
         icon: path.join(__dirname, './icons/icon.png'),

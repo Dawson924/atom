@@ -1,10 +1,11 @@
-import { createRoot } from 'react-dom/client';
-import App from './App';
 import './globals.css';
 import './fonts.css';
 import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
 import { StyledEngineProvider } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
+import './i18n';
 
 const root = createRoot(document.getElementById('root'));
 
