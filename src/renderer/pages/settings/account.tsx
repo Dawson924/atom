@@ -531,6 +531,7 @@ export default function AccountPage() {
                                     return { label: item.name, value: item.name };
                                 })}
                                 placeholder={t('not_selected_text')}
+                                bind
                             />
                             <div className="px-2 mt-2 space-x-4 w-full flex justify-end">
                                 <Button
@@ -544,8 +545,9 @@ export default function AccountPage() {
                                             onConfirm: (value: string) => {
                                                 if (!value) return;
                                                 UserService.addProfile(value)
-                                                    .then(() => {
-                                                        UserService.getProfiles().then(setOfflineProfiles);
+                                                    .then(async () => {
+                                                        await UserService.getProfiles().then(setOfflineProfiles);
+                                                        await UserService.setSelectedProfile(value).then(refreshSession);
                                                         addToast(t('message.greeting', { name: value }));
                                                     })
                                                     .catch(() => {

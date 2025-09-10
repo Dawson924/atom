@@ -34,8 +34,9 @@ const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>>
 
 const FormSelect: React.FC<FormItemProps & {
     options: { value: string, label: string }[];
+    bind?: boolean;
     placeholder?: string;
-} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, placeholder, options }) => {
+} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, bind, onChange, placeholder, options }) => {
     return (
         <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div className="w-32 shrink-0">
@@ -45,7 +46,7 @@ const FormSelect: React.FC<FormItemProps & {
                 <div className="relative items-center">
                     <Select
                         name={name}
-                        defaultValue={value}
+                        {...(bind ? { value } : { defaultValue: value })}
                         onChange={onChange}
                         options={options}
                         placeholder={placeholder}
