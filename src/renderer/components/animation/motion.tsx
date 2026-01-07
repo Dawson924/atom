@@ -1,4 +1,4 @@
-import { useAppearanceConfig } from '@renderer/hooks/config';
+import { useConfig } from '@renderer/hooks/config';
 import React, { HTMLAttributes } from 'react';
 
 export const Motion: React.FC<HTMLAttributes<HTMLElement> & {
@@ -7,7 +7,7 @@ export const Motion: React.FC<HTMLAttributes<HTMLElement> & {
     children,
     animation,
 }) => {
-    const { config, loading } = useAppearanceConfig();
+    const { config, loading } = useConfig();
     if (loading) return null;
 
     return (

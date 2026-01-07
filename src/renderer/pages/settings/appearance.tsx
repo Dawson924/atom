@@ -1,14 +1,14 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ThemeContext } from '../../App';
 import { Accordion, Card, Container, FormCheckbox, FormInput, FormSelect, Input, List } from '@renderer/components/commons';
-import { useAppearanceConfig } from '@renderer/hooks/config';
+import { useConfig } from '@renderer/hooks/config';
 import { useTranslation } from 'react-i18next';
 import { Motion } from '@renderer/components/animation';
 import { useSettingsPage } from '@renderer/hooks/store';
 
 export default function AppearancePage() {
     const { updateTheme } = useContext(ThemeContext);
-    const { config, loading, error, updateConfig } = useAppearanceConfig();
+    const { config, loading, error, updateConfig } = useConfig();
     const { cacheMap } = useSettingsPage();
     const { t, i18n } = useTranslation();
 
@@ -99,7 +99,7 @@ export default function AppearancePage() {
                                     <div className="pr-2 w-full space-x-2 flex flex-row justify-end items-center">
                                         <Input
                                             className="w-1/3!"
-                                            defaultValue={config.window.size.width}
+                                            value={config.window.size.width}
                                             onChange={(e) =>
                                                 updateConfig('window.size', {
                                                     ...config.window.size,
@@ -110,7 +110,7 @@ export default function AppearancePage() {
                                         <h3 className="text-black dark:text-gray-100">x</h3>
                                         <Input
                                             className="w-1/3!"
-                                            defaultValue={config.window.size.height}
+                                            value={config.window.size.height}
                                             onChange={(e) =>
                                                 updateConfig('window.size', {
                                                     ...config.window.size,

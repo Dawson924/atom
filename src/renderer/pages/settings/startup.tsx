@@ -1,11 +1,11 @@
 import { ChangeEvent, useCallback } from 'react';
 import { Card, Container, FormInput, List, RangeSlider } from '@renderer/components/commons';
-import { useLaunchConfig } from '@renderer/hooks/config';
+import { useLaunchOptions } from '@renderer/hooks/config';
 import { useTranslation } from 'react-i18next';
 import { Motion } from '@renderer/components/animation';
 
 export default function StartupPage() {
-    const { config, memory, loading, error, updateConfig } = useLaunchConfig();
+    const { config, memory, loading, error, updateConfig } = useLaunchOptions();
     const { t } = useTranslation();
 
     const handleFormChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,7 @@ export default function StartupPage() {
                                     min={0}
                                     max={memory.total}
                                     step={0.1}
-                                    defaultValue={config.allocatedMemory}
+                                    value={config.allocatedMemory}
                                     onChange={(e) => handleMemoryChange(e.target.value)}
                                 />
                             </div>

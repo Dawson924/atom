@@ -140,7 +140,7 @@ export function ModrinthSearch() {
                                     <div className="w-full">
                                         <Input
                                             name="name"
-                                            defaultValue={formData.name}
+                                            value={formData.name}
                                             onChange={handleChange}
                                             placeholder={t('modrinth.search_placeholder')}
                                         />
@@ -155,7 +155,7 @@ export function ModrinthSearch() {
                                     <div className="relative w-full items-center">
                                         <Select
                                             name="index"
-                                            defaultValue={formData.index}
+                                            value={formData.index}
                                             onChange={handleChange}
                                             options={[
                                                 { label: t('modrinth.index.relevance'), value: 'relevance' },
@@ -169,7 +169,7 @@ export function ModrinthSearch() {
                                     <div className="relative w-full items-center">
                                         <Select
                                             name="type"
-                                            defaultValue={formData.type}
+                                            value={formData.type}
                                             onChange={handleChange}
                                             options={[
                                                 { label: t('modrinth.mod'), value: 'mod' },

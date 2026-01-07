@@ -32,7 +32,7 @@ export default function AccountPage() {
     const [password, setPassword] = useState<string>('');
     // Profile
     const [authOptions, setAuthOptions] = useState<Tentative>();
-    const [offlineProfiles, setOfflineProfiles] = useState<AccountProfile[]>();
+    const [profiles, setProfiles] = useState<AccountProfile[]>();
     // Skin Viewer 3D
     const [animationSelect, setAnimationSelect] = useState<number>(0);
     const [animationSpeed, setAnimationSpeed] = useState<number>(1);
@@ -56,7 +56,7 @@ export default function AccountPage() {
                 setPassword(account.password);
             }
             setAuthOptions(authOptions);
-            setOfflineProfiles(profiles);
+            setProfiles(profiles);
         } catch (err) {
             console.error(err);
         }
@@ -177,7 +177,7 @@ export default function AccountPage() {
                             <div className="ml-auto w-full max-w-lg min-w-[200px]">
                                 <Input
                                     name="username"
-                                    defaultValue={username}
+                                    value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
                             </div>
@@ -192,7 +192,7 @@ export default function AccountPage() {
                                 <Input
                                     name="password"
                                     type="password"
-                                    defaultValue={password}
+                                    value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
@@ -515,23 +515,28 @@ export default function AccountPage() {
                                 { label: t('user.mode.yggdrasil'), value: 'yggdrasil' },
                             ]}
                         />
-                        {authOptions.mode === 'offline' && offlineProfiles &&
+                        {authOptions.mode === 'offline' && profiles &&
                         <>
                             <FormSelect
                                 title={t('label.profile')}
-                                value={session.profile?.name}
-                                onChange={async (e) =>
-                                    UserService
-                                        .setSelectedProfile(
-                                            (await UserService.getProfile(e.target.value))?.id || null
-                                        )
-                                        .then(refreshSession)
+                                value={session.profile?.name || ''}
+                                onChange={async (e) => {
+                                    const selectedValue = e.target.value;
+                                    if (selectedValue === '') {
+                                        await UserService.setSelectedProfile(null);
+                                    } else {
+                                        const id = (await UserService.getProfile(selectedValue))?.id;
+                                        await UserService.setSelectedProfile(id);
+                                    }
+                                    await refreshSession();
                                 }
-                                options={offlineProfiles.map(item => {
+                                }
+                                options={[{
+                                    label: t('not_selected_text'),
+                                    value: ''
+                                }, ...profiles.map(item => {
                                     return { label: item.name, value: item.name };
-                                })}
-                                placeholder={t('not_selected_text')}
-                                bind
+                                })]}
                             />
                             <div className="px-2 mt-2 space-x-4 w-full flex justify-end">
                                 <Button
@@ -546,7 +551,7 @@ export default function AccountPage() {
                                                 if (!value) return;
                                                 UserService.addProfile(value)
                                                     .then(async () => {
-                                                        await UserService.getProfiles().then(setOfflineProfiles);
+                                                        await UserService.getProfiles().then(setProfiles);
                                                         await UserService.setSelectedProfile(value).then(refreshSession);
                                                         addToast(t('message.greeting', { name: value }));
                                                     })

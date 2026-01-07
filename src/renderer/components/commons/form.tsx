@@ -24,7 +24,7 @@ const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>>
             <div className="w-full min-w-80">
                 <Input
                     name={name}
-                    defaultValue={value}
+                    value={value}
                     onChange={onChange}
                 />
             </div>
@@ -34,9 +34,8 @@ const FormInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElement>>
 
 const FormSelect: React.FC<FormItemProps & {
     options: { value: string, label: string }[];
-    bind?: boolean;
     placeholder?: string;
-} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, bind, onChange, placeholder, options }) => {
+} & InputHTMLAttributes<HTMLSelectElement>> = ({ title, name, value, onChange, placeholder, options }) => {
     return (
         <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center">
             <div className="w-32 shrink-0">
@@ -46,7 +45,7 @@ const FormSelect: React.FC<FormItemProps & {
                 <div className="relative items-center">
                     <Select
                         name={name}
-                        {...(bind ? { value } : { defaultValue: value })}
+                        value={value}
                         onChange={onChange}
                         options={options}
                         placeholder={placeholder}
@@ -83,7 +82,7 @@ const FormRangeInput: React.FC<FormItemProps & InputHTMLAttributes<HTMLInputElem
                     className={clsx('transparent h-1 w-full cursor-pointer appearance-none border-transparent bg-neutral-200 dark:bg-neutral-600', className)}
                     min={min}
                     max={max}
-                    defaultValue={value}
+                    value={value}
                     onChange={onChange}
                 />
             </div>

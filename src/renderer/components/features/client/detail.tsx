@@ -99,7 +99,7 @@ export function ClientVersionDetail({ version }: {
                         <div className="px-2 w-full h-9.5 flex flex-row space-x-3 items-center rounded-lg">
                             <div className="w-full min-w-80">
                                 <Input
-                                    defaultValue={versionName}
+                                    value={versionName}
                                     onChange={({ target: { value } }) => setVersionName(value)}
                                 />
                             </div>
